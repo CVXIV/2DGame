@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
+using UnityEngine;
 using static ConstantVar;
 
 public class CharacterControl : MonoBehaviour {
@@ -15,14 +17,18 @@ public class CharacterControl : MonoBehaviour {
     private bool isJump = false;
     private PlayerStatus status = PlayerStatus.IDEL;
     private PassPlatform passPlatform;
+    private ContactFilter2D groundMask;
+    private BeDamage beDamage;
     #endregion
 
     #region 回调
     private void Awake() {
-        this.box = GetComponent<BoxCollider2D>();
-        this.rigid = GetComponent<Rigidbody2D>();
-        this.sprite = GetComponent<SpriteRenderer>();
-        this.animator = GetComponent<Animator>();
+        InitBeDamage();
+        groundMask.SetLayerMask(1 << ConstantVar.groundLayer);
+        box = GetComponent<BoxCollider2D>();
+        rigid = GetComponent<Rigidbody2D>();
+        sprite = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
     }
 
     private void Update() {
@@ -36,7 +42,6 @@ public class CharacterControl : MonoBehaviour {
             // 下跳跃
             SetDownJump();
         }
-
         // 检测地面
         CheckIsOnGround();
 
@@ -46,25 +51,66 @@ public class CharacterControl : MonoBehaviour {
         // 播放动画
         PlayAnimation();
     }
-
     #endregion
 
+    #region 攻击，受伤，死亡相关
+    private void OnAttack() {
+        Debug.Log("攻击！");
+    }
+    private void OnHurt() {
+        animator.SetTrigger("on_hurt");
+        animator.SetBool("is_invincible", true);
+        GamePanel._instance.UpdateHP(beDamage.health);
+        beDamage.Disable();
+        Invoke(nameof(RestoreEnable), 1);
+    }
+    private void OnDead() {
+        GamePanel._instance.UpdateHP(beDamage.health);
+        Debug.Log("死亡！");
+    }
+
+    private void RestoreEnable() {
+        beDamage.Enable();
+        animator.SetBool("is_invincible", false);
+    }
+    #endregion
+
+    #region 初始化
+    private void InitBeDamage() {
+        beDamage = GetComponent<BeDamage>();
+        beDamage.onHurt += OnHurt;
+        beDamage.onDead += OnDead;
+        // 初始化血量
+        GamePanel._instance.InitHP(PlayerPrefs.GetInt(ConstantVar.HP, 5));
+    }
+    #endregion
     private void CheckIsOnGround() {
-        // 发射两条射线确认角色是否处于地面
         Vector3 left = new Vector3(box.bounds.center.x - box.bounds.extents.x, box.bounds.center.y - box.bounds.extents.y, box.bounds.center.z);
         Vector3 right = new Vector3(box.bounds.center.x + box.bounds.extents.x, box.bounds.center.y - box.bounds.extents.y, box.bounds.center.z);
-        RaycastHit2D hit1 = Physics2D.Raycast(left, Vector3.down, box.bounds.extents.y, 1 << ConstantVar.groundLayer);
-        RaycastHit2D hit2 = Physics2D.Raycast(right, Vector3.down, box.bounds.extents.y, 1 << ConstantVar.groundLayer);
+        // 发射4条射线确认角色是否处于地面
+        RaycastHit2D hit1 = Physics2D.Raycast(left, Vector3.down, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D hit2 = Physics2D.Raycast(right, Vector3.down, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D hit3 = Physics2D.Raycast(left, Vector3.up, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D hit4 = Physics2D.Raycast(right, Vector3.up, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
+        isOnGround = hit1 || hit2 || hit3 || hit4;
+        Collider2D transformCollider = hit1.collider != null ? hit1.collider : hit2.collider != null ? hit2.collider : hit3.collider != null ? hit3.collider : hit4.collider;
 
-        Collider2D transformCollider = hit1.collider != null ? hit1.collider : hit2.collider;
-        isOnGround = hit1 || hit2;
         // 如果是空中平台，则需要判断是否触碰了上边的碰撞线
         if (isOnGround && transformCollider.CompareTag(SkyGroundTag)) {
             passPlatform = transformCollider.transform.GetComponent<PassPlatform>();
             float transform_y = transformCollider.bounds.center.y + transformCollider.bounds.extents.y;
-            isOnGround = left.y - transform_y >= 0;
+            if (passPlatform != null) {
+                if (passPlatform.ReadyToGround) {
+                    isOnGround = true;
+                } else {
+                    isOnGround = passPlatform.ReadyToGround = left.y - transform_y >= 0;
+                }
+            }
         } else {
-            passPlatform = null;
+            if (passPlatform != null) {
+                passPlatform.ReadyToGround = false;
+                passPlatform = null;
+            }
         }
     }
 
