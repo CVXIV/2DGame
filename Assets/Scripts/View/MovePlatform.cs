@@ -18,9 +18,12 @@ public class MovePlatform : MonoBehaviour {
 
     private void TransportObj() {
         int count = rigid.GetContacts(contacts);
+        print(count);
         // 去重
         for (int i = 0; i < count; i += 2) {
-            contacts[i].rigidbody.velocity += new Vector2(isForth ? speed : -speed, 0);
+            // 只需要x分量的速度
+            float velocity_x = (curTarget - new Vector2(transform.position.x, transform.position.y)).normalized.x * speed;
+            contacts[i].rigidbody.velocity += new Vector2(velocity_x, 0);
         }
     }
 

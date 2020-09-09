@@ -5,17 +5,8 @@ using UnityEngine;
 public class PassPlatform : MonoBehaviour {
     private PlatformEffector2D effect;
     private int layer;
-    private bool readyToGround = false;
 
-    public bool ReadyToGround {
-        get {
-            return readyToGround;
-        }
-
-        set {
-            readyToGround = value;
-        }
-    }
+    public bool ReadyToGround { get; set; } = false;
 
     private void Awake() {
         effect = GetComponent<PlatformEffector2D>();

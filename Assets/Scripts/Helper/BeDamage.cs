@@ -2,8 +2,17 @@
 using UnityEngine;
 
 public class BeDamage : MonoBehaviour {
-    public int health;
-    public Action onHurt;
+    protected int health;
+    public int Health {
+        get {
+            return health;
+        }
+        set {
+            health = value;
+        }
+    }
+
+    public Action<DamageType, string> onHurt;
     public Action onDead;
     private bool isEnable = true;
 
@@ -15,15 +24,13 @@ public class BeDamage : MonoBehaviour {
         isEnable = false;
     }
 
-    public void TakeDamage(int value) {
-        if (isEnable) {
-            // 减少血量
+    public virtual void TakeDamage(int value, DamageType damageType, string resetPos) {
+        if (isEnable && health > 0) {
             health -= value;
-            // 播放受伤动画
             if (health <= 0) {
                 onDead?.Invoke();
             } else {
-                onHurt?.Invoke();
+                onHurt?.Invoke(damageType, resetPos);
             }
         }
     }

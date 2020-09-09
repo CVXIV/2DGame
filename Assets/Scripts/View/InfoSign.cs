@@ -17,12 +17,12 @@ public class InfoSign : MonoBehaviour {
     private void OnTriggerEnter2D(Collider2D collision) {
         sprite.sprite = highlight;
         // 展示提示
-        TipMessagePanel._instance.Show(content, TipStyle.Buttom);
+        TipMessagePanel.Instance.Show(content, TipStyle.Buttom);
     }
 
     private void OnTriggerExit2D(Collider2D collision) {
         sprite.sprite = normal;
         // 隐藏提示
-        TipMessagePanel._instance.Hide(TipStyle.Buttom);
+        TipMessagePanel.Instance.Hide(TipStyle.Buttom);
     }
 }

@@ -21,12 +21,9 @@ public class SceneHelper {
 
     public void LoadScene(int index) {
         // 展示加载信息
-        if (LoadScenePanel._instance == null) {
-            GameObject.Instantiate(Resources.Load<GameObject>("prefab/View/LoadScenePanel"));
-        }
         // 加载场景
         info = SceneManager.LoadSceneAsync(index);
-        LoadScenePanel._instance.Show(info);
+        LoadScenePanel.Instance.Show(info);
     }
 
     private void LoadScene(int index, Action<AsyncOperation> complete) {

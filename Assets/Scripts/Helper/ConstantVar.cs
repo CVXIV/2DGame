@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ConstantVar {
     public const string HP = "HP";
+    public static int MAXHP = 2;
     public const string Volume = "Volume";
     public const string Sound = "Sound";
     public const int groundLayer = 20;

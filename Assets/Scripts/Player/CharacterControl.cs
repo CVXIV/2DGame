@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq.Expressions;
-using UnityEngine;
+﻿using UnityEngine;
 using static ConstantVar;
 
 public class CharacterControl : MonoBehaviour {
@@ -18,17 +16,21 @@ public class CharacterControl : MonoBehaviour {
     private PlayerStatus status = PlayerStatus.IDEL;
     private PassPlatform passPlatform;
     private ContactFilter2D groundMask;
-    private BeDamage beDamage;
+    private PlayerBeDamage beDamage;
+    private string resetPos;
     #endregion
 
     #region 回调
     private void Awake() {
-        InitBeDamage();
         groundMask.SetLayerMask(1 << ConstantVar.groundLayer);
         box = GetComponent<BoxCollider2D>();
         rigid = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+    }
+
+    private void Start() {
+        InitBeDamage();
     }
 
     private void Update() {
@@ -57,16 +59,53 @@ public class CharacterControl : MonoBehaviour {
     private void OnAttack() {
         Debug.Log("攻击！");
     }
-    private void OnHurt() {
-        animator.SetTrigger("on_hurt");
-        animator.SetBool("is_invincible", true);
-        GamePanel._instance.UpdateHP(beDamage.health);
-        beDamage.Disable();
-        Invoke(nameof(RestoreEnable), 1);
+    private void OnHurt(DamageType damageType, string resetPos) {
+        this.resetPos = resetPos;
+        switch (damageType) {
+            case DamageType.Normal:
+                animator.SetTrigger("on_hurt");
+                SetInvincible(1);
+                break;
+            case DamageType.Dead:
+                // 播放死亡动画，重置位置
+                PrepareDead();
+                TipMessagePanel.Instance.Show(null, TipStyle.FullScreen);
+                Invoke(nameof(ResetFromDead), 1);
+                break;
+        }
+        
     }
+
+    private void SetInvincible(float time) {
+        animator.SetBool("is_invincible", true);
+        beDamage.Disable();
+        Invoke(nameof(RestoreEnable), time);
+    }
+
+    private void PrepareDead() {
+        animator.SetTrigger("dead_trigger");
+        animator.SetBool("is_dead", true);
+        NotMove();
+    }
+
+    private void AfterDead() {
+        TipMessagePanel.Instance.Show(null, TipStyle.GameOver);
+        beDamage.Reset();
+        this.resetPos = "Pos1";
+        Invoke(nameof(ResetFromDead), 3);
+    }
+
     private void OnDead() {
-        GamePanel._instance.UpdateHP(beDamage.health);
-        Debug.Log("死亡！");
+        PrepareDead();
+        Invoke(nameof(AfterDead), 1);
+    }
+
+    private void ResetFromDead() {
+        TipMessagePanel.Instance.Hide(TipStyle.GameOver);
+        animator.SetBool("is_dead", false);
+        CanMove();
+        transform.position = GameObject.Find(resetPos).transform.position;
+        SetInvincible(2);
     }
 
     private void RestoreEnable() {
@@ -77,11 +116,9 @@ public class CharacterControl : MonoBehaviour {
 
     #region 初始化
     private void InitBeDamage() {
-        beDamage = GetComponent<BeDamage>();
+        beDamage = GetComponent<PlayerBeDamage>();
         beDamage.onHurt += OnHurt;
         beDamage.onDead += OnDead;
-        // 初始化血量
-        GamePanel._instance.InitHP(PlayerPrefs.GetInt(ConstantVar.HP, 5));
     }
     #endregion
     private void CheckIsOnGround() {
@@ -121,7 +158,7 @@ public class CharacterControl : MonoBehaviour {
         //this.SetSpeedY(0);
     }
 
-    public void Restore() {
+    public void CanMove() {
         this.canMove = true;
     }
 

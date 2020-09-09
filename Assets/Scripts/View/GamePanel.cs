@@ -29,4 +29,10 @@ public class GamePanel : Singleton<GamePanel> {
             toggle.isOn = false;
         }
     }
+
+    public void ResetHP() {
+        foreach(var item in hp) {
+            item.GetComponent<Toggle>().isOn = true;
+        }
+    }
 }
