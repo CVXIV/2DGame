@@ -5,19 +5,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneHelper {
-    private static readonly SceneHelper _instance = new SceneHelper();
+public class SceneHelper : PureSingleton<SceneHelper> {
     private AsyncOperation info;
-    /// 显式的静态构造函数用来告诉C#编译器在其内容实例化之前不要标记其类型
-    static SceneHelper() { }
-
-    private SceneHelper() { }
-
-    public static SceneHelper Instance {
-        get {
-            return _instance;
-        }
-    }
 
     public void LoadScene(int index) {
         // 展示加载信息

@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 using static ConstantVar;
 
+public enum AttackType {
+    NormalAttack = 0,
+    ShootAttack = 1
+}
+
 public class CharacterControl : MonoBehaviour {
     #region 变量
     private bool canMove = true;
@@ -18,6 +23,9 @@ public class CharacterControl : MonoBehaviour {
     private ContactFilter2D groundMask;
     private PlayerBeDamage beDamage;
     private string resetPos;
+    private readonly float attackGap = 1.0f;
+    public bool IsHasWeapon { get; set; } = false;
+    private bool isReadyAttack = true;
     #endregion
 
     #region 回调
@@ -43,6 +51,9 @@ public class CharacterControl : MonoBehaviour {
 
             // 下跳跃
             SetDownJump();
+
+            // 攻击
+            SetAttack();
         }
         // 检测地面
         CheckIsOnGround();
@@ -56,9 +67,31 @@ public class CharacterControl : MonoBehaviour {
     #endregion
 
     #region 攻击，受伤，死亡相关
-    private void OnAttack() {
-        Debug.Log("攻击！");
+    private void SetAttack() {
+        if (IsHasWeapon && isReadyAttack) {
+            if (Input.GetAxisRaw("Fire1") != 0 || Input.GetButtonDown("Fire1")) {
+                OnAttack(AttackType.NormalAttack);
+                isReadyAttack = false;
+                Invoke(nameof(ResetAttack), attackGap);
+            } else if(Input.GetAxisRaw("Fire2") != 0 || Input.GetButtonDown("Fire2")) {
+                OnAttack(AttackType.ShootAttack);
+                isReadyAttack = false;
+                Invoke(nameof(ResetAttack), attackGap);
+            }
+
+        }
     }
+
+    private void ResetAttack() {
+        isReadyAttack = true;
+    }
+
+    private void OnAttack(AttackType attackType) {
+        animator.SetTrigger("attack");
+        animator.SetInteger("attack_type", (int)attackType);
+    }
+
+
     private void OnHurt(DamageType damageType, string resetPos) {
         this.resetPos = resetPos;
         switch (damageType) {

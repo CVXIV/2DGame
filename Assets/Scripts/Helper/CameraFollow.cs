@@ -37,7 +37,7 @@ public class CameraFollow : MonoBehaviour {
             if (Mathf.Abs(cameraPos.position.x - target.position.x) > maxXoffset || Mathf.Abs(cameraPos.position.y - target.position.y) > maxYoffset) {
                 Vector3 goal = new Vector3(target.position.x, target.position.y, cameraPos.position.z);
                 
-                cameraPos.position = Vector3.Lerp(cameraPos.position, goal, 0.01f);
+                cameraPos.position = Vector3.Lerp(cameraPos.position, goal, Time.deltaTime);
             }
         } else {
             cameraPos.position = Vector3.Lerp(cameraPos.position, new Vector3(speicalPosition.x, speicalPosition.y, cameraPos.position.z), 3 * Time.deltaTime);

@@ -46,7 +46,6 @@ public class TipMessagePanel : Singleton<TipMessagePanel> {
 
     }
 
-
     private void HideFullScreen() {
         Hide(TipStyle.FullScreen);
     }
