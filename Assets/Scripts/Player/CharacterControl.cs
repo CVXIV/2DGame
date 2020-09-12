@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using static ConstantVar;
 
 public enum AttackType {
@@ -26,10 +27,16 @@ public class CharacterControl : MonoBehaviour {
     private readonly float attackGap = 1.0f;
     public bool IsHasWeapon { get; set; } = false;
     private bool isReadyAttack = true;
+
+    // 攻击范围检测
+    private BoxCollider2D attackRange;
+    private AttackRange attackCheck;
     #endregion
 
     #region 回调
     private void Awake() {
+        attackRange = transform.Find("ModifyPos/AttackRange").GetComponent<BoxCollider2D>();
+        attackCheck = attackRange.GetComponent<AttackRange>();
         groundMask.SetLayerMask(1 << ConstantVar.groundLayer);
         box = GetComponent<BoxCollider2D>();
         rigid = GetComponent<Rigidbody2D>();
@@ -67,6 +74,11 @@ public class CharacterControl : MonoBehaviour {
     #endregion
 
     #region 攻击，受伤，死亡相关
+
+    private void AttackDamage() {
+        HashSet<BeDamage> objs = attackCheck.GetDamageObjs();
+    }
+
     private void SetAttack() {
         if (IsHasWeapon && isReadyAttack) {
             if (Input.GetAxisRaw("Fire1") != 0 || Input.GetButtonDown("Fire1")) {
@@ -84,11 +96,17 @@ public class CharacterControl : MonoBehaviour {
 
     private void ResetAttack() {
         isReadyAttack = true;
+        animator.SetFloat("attack_threshold", 0);
     }
 
     private void OnAttack(AttackType attackType) {
         animator.SetTrigger("attack");
         animator.SetInteger("attack_type", (int)attackType);
+        if(attackType == AttackType.ShootAttack) {
+            animator.SetFloat("attack_threshold", 1);
+        }else if (attackType == AttackType.NormalAttack) {
+
+        }
     }
 
 
@@ -163,8 +181,7 @@ public class CharacterControl : MonoBehaviour {
         RaycastHit2D hit3 = Physics2D.Raycast(left, Vector3.up, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
         RaycastHit2D hit4 = Physics2D.Raycast(right, Vector3.up, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
         isOnGround = hit1 || hit2 || hit3 || hit4;
-        Collider2D transformCollider = hit1.collider != null ? hit1.collider : hit2.collider != null ? hit2.collider : hit3.collider != null ? hit3.collider : hit4.collider;
-
+        Collider2D transformCollider = hit1.collider ?? (hit2.collider ?? (hit3.collider ?? hit4.collider));
         // 如果是空中平台，则需要判断是否触碰了上边的碰撞线
         if (isOnGround && transformCollider.CompareTag(SkyGroundTag)) {
             passPlatform = transformCollider.transform.GetComponent<PassPlatform>();
@@ -236,6 +253,9 @@ public class CharacterControl : MonoBehaviour {
         if (value != 0) {
             // 设置角色转向
             sprite.flipX = value < 0;
+            Vector3 attackRangePos = attackRange.transform.localPosition;
+            attackRangePos.x = value < 0 ? -Mathf.Abs(attackRangePos.x) : Mathf.Abs(attackRangePos.x);
+            attackRange.transform.localPosition = attackRangePos;
         }
         if (status == PlayerStatus.CROUCH) {
             value = 0;
