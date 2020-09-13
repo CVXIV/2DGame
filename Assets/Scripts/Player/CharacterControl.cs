@@ -23,6 +23,7 @@ public class CharacterControl : MonoBehaviour {
     private PassPlatform passPlatform;
     private ContactFilter2D groundMask;
     private PlayerBeDamage beDamage;
+    private Damage damage;
     private string resetPos;
     private readonly float attackGap = 1.0f;
     public bool IsHasWeapon { get; set; } = false;
@@ -31,10 +32,15 @@ public class CharacterControl : MonoBehaviour {
     // 攻击范围检测
     private BoxCollider2D attackRange;
     private AttackRange attackCheck;
+    // 子弹生成位置
+    private Transform bulletPos;
+    private GameObject bullet;
     #endregion
 
     #region 回调
     private void Awake() {
+        damage = GetComponent<Damage>();
+        bulletPos = transform.Find("BulletPos");
         attackRange = transform.Find("ModifyPos/AttackRange").GetComponent<BoxCollider2D>();
         attackCheck = attackRange.GetComponent<AttackRange>();
         groundMask.SetLayerMask(1 << ConstantVar.groundLayer);
@@ -75,10 +81,6 @@ public class CharacterControl : MonoBehaviour {
 
     #region 攻击，受伤，死亡相关
 
-    private void AttackDamage() {
-        HashSet<BeDamage> objs = attackCheck.GetDamageObjs();
-    }
-
     private void SetAttack() {
         if (IsHasWeapon && isReadyAttack) {
             if (Input.GetAxisRaw("Fire1") != 0 || Input.GetButtonDown("Fire1")) {
@@ -104,9 +106,28 @@ public class CharacterControl : MonoBehaviour {
         animator.SetInteger("attack_type", (int)attackType);
         if(attackType == AttackType.ShootAttack) {
             animator.SetFloat("attack_threshold", 1);
-        }else if (attackType == AttackType.NormalAttack) {
-
+            // 创建子弹，延迟调用确保在动画执行之后生成子弹
+            Invoke(nameof(MakeBullet), 0.05f);
         }
+    }
+
+    // 普通攻击某一帧调用
+    private void AttackDamage() {
+        damage.Attack(attackCheck.GetDamageObjs().ToArray());
+    }
+
+    private void MakeBullet() {
+        if (bullet == null) {
+            bullet = Resources.Load<GameObject>("prefab/View/Bullet");
+        }
+        GameObject newBullet = Instantiate(bullet);
+        if (sprite.flipX) {
+            bulletPos.localPosition = new Vector3(-Mathf.Abs(bulletPos.localPosition.x), bulletPos.localPosition.y, 0);
+        } else {
+            bulletPos.localPosition = new Vector3(Mathf.Abs(bulletPos.localPosition.x), bulletPos.localPosition.y, 0);
+        }
+        newBullet.transform.position = bulletPos.position;
+        newBullet.GetComponent<Bullet>().SetSpeed(!sprite.flipX);
     }
 
 
@@ -130,7 +151,15 @@ public class CharacterControl : MonoBehaviour {
     private void SetInvincible(float time) {
         animator.SetBool("is_invincible", true);
         beDamage.Disable();
+        // 避免和Enemy碰撞
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer(ConstantVar.EnemyLayer), LayerMask.NameToLayer(ConstantVar.PlayLayer), true);
         Invoke(nameof(RestoreEnable), time);
+    }
+
+    private void RestoreEnable() {
+        beDamage.Enable();
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer(ConstantVar.EnemyLayer), LayerMask.NameToLayer(ConstantVar.PlayLayer), false);
+        animator.SetBool("is_invincible", false);
     }
 
     private void PrepareDead() {
@@ -142,11 +171,11 @@ public class CharacterControl : MonoBehaviour {
     private void AfterDead() {
         TipMessagePanel.Instance.Show(null, TipStyle.GameOver);
         beDamage.Reset();
-        this.resetPos = "Pos1";
         Invoke(nameof(ResetFromDead), 3);
     }
 
-    private void OnDead() {
+    private void OnDead(string resetPos) {
+        this.resetPos = resetPos;
         PrepareDead();
         Invoke(nameof(AfterDead), 1);
     }
@@ -157,11 +186,6 @@ public class CharacterControl : MonoBehaviour {
         CanMove();
         transform.position = GameObject.Find(resetPos).transform.position;
         SetInvincible(2);
-    }
-
-    private void RestoreEnable() {
-        beDamage.Enable();
-        animator.SetBool("is_invincible", false);
     }
     #endregion
 

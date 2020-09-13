@@ -2,6 +2,7 @@
 using UnityEngine;
 
 public class BeDamage : MonoBehaviour {
+    [SerializeField]
     protected int health;
     public int Health {
         get {
@@ -13,7 +14,7 @@ public class BeDamage : MonoBehaviour {
     }
 
     public Action<DamageType, string> onHurt;
-    public Action onDead;
+    public Action<string> onDead;
     private bool isEnable = true;
 
     public void Enable() {
@@ -28,7 +29,7 @@ public class BeDamage : MonoBehaviour {
         if (isEnable && health > 0) {
             health -= value;
             if (health <= 0) {
-                onDead?.Invoke();
+                onDead?.Invoke(resetPos);
             } else {
                 onHurt?.Invoke(damageType, resetPos);
             }

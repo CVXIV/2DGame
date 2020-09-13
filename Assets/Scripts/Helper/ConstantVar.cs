@@ -9,6 +9,8 @@ public class ConstantVar {
     public const string Sound = "Sound";
     public const int groundLayer = 20;
     public const string PlayTag = "Player";
+    public const string PlayLayer = "Player";
+    public const string EnemyLayer = "Enemy";
     public const string SkyGroundTag = "SkyGround";
     public const int sceneStart = 0;
     public const int sceneLeven1 = 1;
