@@ -17,25 +17,29 @@ public class Chomper : MonoBehaviour {
     private Transform checkPath;
     private Animator animator;
     private Rigidbody2D rigid;
-    private SpriteRenderer sprite;
-    private BoxCollider2D box;
     private readonly float idel_time = 3f;
     private float idel_count = 0;
-    private float walk_speed = 2, run_speed = 5;
+    private bool isFlip = false;
+    private bool isLock = false;
     private ChomperStatus status = ChomperStatus.IDEL;
+    public float WalkSpeed { get; set; } = 1.5f;
+    public float RunSpeed { get; set; } = 3;
     #endregion
 
     private void Awake() {
         beDamage = GetComponent<BeDamage>();
         beDamage.onDead += OnDead;
 
-        damage = GetComponent<Damage>();
         checkPath = transform.Find("CheckPath");
+
+        damage = GetComponent<Damage>();
         animator = GetComponent<Animator>();
-        sprite = GetComponent<SpriteRenderer>();
         rigid = GetComponent<Rigidbody2D>();
-        box = GetComponent<BoxCollider2D>();
+
+        InitCollider();
     }
+
+
 
     private void Update() {
         ActionOfStatus();
@@ -50,7 +54,12 @@ public class Chomper : MonoBehaviour {
 
     private void OnDead(string resPos) {
         status = ChomperStatus.DEATH;
+        // 确保动画必定播放，如果放在PlayAnimation，可能导致状态被冲走
         animator.SetBool("is_dead", true);
+    }
+
+    private void InitCollider() {
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer(ConstantVar.EnemyLayer), LayerMask.NameToLayer(ConstantVar.EnemyLayer));
     }
 
     // 动画最后一帧调用
@@ -58,10 +67,11 @@ public class Chomper : MonoBehaviour {
         Destroy(gameObject);
     }
 
-    private void SetSpeedX(float value) {
+    public void SetSpeedX(float value) {
         if (value != 0) {
             // 设置角色转向
-            sprite.flipX = value < 0;
+            isFlip = value < 0;
+            transform.rotation = Quaternion.Euler(0, value < 0 ? 180 : 0, 0);
         }
         rigid.velocity = new Vector2(value, rigid.velocity.y);
     }
@@ -79,23 +89,30 @@ public class Chomper : MonoBehaviour {
                 idel_count += Time.deltaTime;
                 if (idel_count >= idel_time) {
                     idel_count = 0;
+                    SetSpeedX(WalkSpeed);
                     status = ChomperStatus.WALK;
                 }
                 break;
             case ChomperStatus.WALK:
                 if (CheckPath()) {
-                    SetSpeedX(walk_speed);
+                    SetSpeedX(WalkSpeed);
                 } else {
                     SetSpeedX(0);
-                    walk_speed = -walk_speed;
-                    run_speed = -run_speed;
+                    WalkSpeed = -WalkSpeed;
                     status = ChomperStatus.IDEL;
-                    checkPath.localPosition = new Vector3(-checkPath.localPosition.x, checkPath.localPosition.y, checkPath.localPosition.z);
                 }
                 break;
             case ChomperStatus.RUN:
+                if (CheckPath()) {
+                    SetSpeedX(RunSpeed);
+                } else {
+                    SetSpeedX(0);
+                    RunSpeed = -RunSpeed;
+                    status = ChomperStatus.IDEL;
+                }
                 break;
             case ChomperStatus.ATTACK:
+                SetSpeedX(0);
                 break;
             case ChomperStatus.DEATH:
                 SetSpeedX(0);
@@ -120,8 +137,28 @@ public class Chomper : MonoBehaviour {
         // 首先检测脚下是否有地面
         RaycastHit2D down = Physics2D.Raycast(checkPath.position, Vector2.down, 1f, 1 << ConstantVar.groundLayer);
         // 其次检测面前是否有障碍物
-        Vector3 start = box.bounds.center + new Vector3(checkPath.localPosition.x > 0 ? box.bounds.extents.x : -box.bounds.extents.x, -box.bounds.extents.y, 0);
-        RaycastHit2D forward = Physics2D.Raycast(start, checkPath.localPosition.x > 0 ? Vector2.right : Vector2.left, 0.2f, 1 << ConstantVar.groundLayer);
-        return down && !forward;
+        RaycastHit2D forward = Physics2D.Raycast(checkPath.position, Vector2.right, 0.2f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D back = Physics2D.Raycast(checkPath.position, Vector2.left, 0.2f, 1 << ConstantVar.groundLayer);
+        return down && !forward && !back;
+    }
+
+    /// <summary>
+    /// 提供给外部使用的改变状态的方法
+    /// </summary>
+    /// <param name="chomperStatus"></param>
+    public void SetStatus(ChomperStatus chomperStatus) {
+        status = chomperStatus;
+    }
+
+    public void Lock() {
+        isLock = true;
+    }
+
+    public void UnLock() {
+        isLock = false;
+    }
+
+    public bool IsLock() {
+        return isLock;
     }
 }

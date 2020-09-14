@@ -10,6 +10,7 @@ public enum AttackType {
 public class CharacterControl : MonoBehaviour {
     #region 变量
     private bool canMove = true;
+    private bool isFlip = false;
     private BoxCollider2D box;
     private Rigidbody2D rigid;
     private SpriteRenderer sprite;
@@ -26,7 +27,10 @@ public class CharacterControl : MonoBehaviour {
     private Damage damage;
     private string resetPos;
     private readonly float attackGap = 1.0f;
-    public bool IsHasWeapon { get; set; } = false;
+    public bool IsHasWeapon {
+        get;
+        set;
+    }
     private bool isReadyAttack = true;
 
     // 攻击范围检测
@@ -41,13 +45,14 @@ public class CharacterControl : MonoBehaviour {
     private void Awake() {
         damage = GetComponent<Damage>();
         bulletPos = transform.Find("BulletPos");
-        attackRange = transform.Find("ModifyPos/AttackRange").GetComponent<BoxCollider2D>();
+        attackRange = transform.Find("AttackRange").GetComponent<BoxCollider2D>();
         attackCheck = attackRange.GetComponent<AttackRange>();
         groundMask.SetLayerMask(1 << ConstantVar.groundLayer);
         box = GetComponent<BoxCollider2D>();
         rigid = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        IsHasWeapon = DataManager.Instance.GetData(ConstantVar.weapon_key) is Data1Value<bool> data && data.Value1;
     }
 
     private void Start() {
@@ -87,7 +92,7 @@ public class CharacterControl : MonoBehaviour {
                 OnAttack(AttackType.NormalAttack);
                 isReadyAttack = false;
                 Invoke(nameof(ResetAttack), attackGap);
-            } else if(Input.GetAxisRaw("Fire2") != 0 || Input.GetButtonDown("Fire2")) {
+            } else if (Input.GetAxisRaw("Fire2") != 0 || Input.GetButtonDown("Fire2")) {
                 OnAttack(AttackType.ShootAttack);
                 isReadyAttack = false;
                 Invoke(nameof(ResetAttack), attackGap);
@@ -104,7 +109,7 @@ public class CharacterControl : MonoBehaviour {
     private void OnAttack(AttackType attackType) {
         animator.SetTrigger("attack");
         animator.SetInteger("attack_type", (int)attackType);
-        if(attackType == AttackType.ShootAttack) {
+        if (attackType == AttackType.ShootAttack) {
             animator.SetFloat("attack_threshold", 1);
             // 创建子弹，延迟调用确保在动画执行之后生成子弹
             Invoke(nameof(MakeBullet), 0.05f);
@@ -121,13 +126,8 @@ public class CharacterControl : MonoBehaviour {
             bullet = Resources.Load<GameObject>("prefab/View/Bullet");
         }
         GameObject newBullet = Instantiate(bullet);
-        if (sprite.flipX) {
-            bulletPos.localPosition = new Vector3(-Mathf.Abs(bulletPos.localPosition.x), bulletPos.localPosition.y, 0);
-        } else {
-            bulletPos.localPosition = new Vector3(Mathf.Abs(bulletPos.localPosition.x), bulletPos.localPosition.y, 0);
-        }
         newBullet.transform.position = bulletPos.position;
-        newBullet.GetComponent<Bullet>().SetSpeed(!sprite.flipX);
+        newBullet.GetComponent<Bullet>().SetSpeed(!isFlip);
     }
 
 
@@ -142,10 +142,10 @@ public class CharacterControl : MonoBehaviour {
                 // 播放死亡动画，重置位置
                 PrepareDead();
                 TipMessagePanel.Instance.Show(null, TipStyle.FullScreen);
-                Invoke(nameof(ResetFromDead), 1);
+                Invoke(nameof(ResetPos), 1);
                 break;
         }
-        
+
     }
 
     private void SetInvincible(float time) {
@@ -163,6 +163,7 @@ public class CharacterControl : MonoBehaviour {
     }
 
     private void PrepareDead() {
+        beDamage.Disable();
         animator.SetTrigger("dead_trigger");
         animator.SetBool("is_dead", true);
         NotMove();
@@ -170,7 +171,6 @@ public class CharacterControl : MonoBehaviour {
 
     private void AfterDead() {
         TipMessagePanel.Instance.Show(null, TipStyle.GameOver);
-        beDamage.Reset();
         Invoke(nameof(ResetFromDead), 3);
     }
 
@@ -180,8 +180,20 @@ public class CharacterControl : MonoBehaviour {
         Invoke(nameof(AfterDead), 1);
     }
 
+
+    private void ResetPos() {
+        animator.SetBool("is_dead", false);
+        CanMove();
+        transform.position = GameObject.Find(resetPos).transform.position;
+        SetInvincible(2);
+    }
+
+    /// <summary>
+    /// 角色死亡后重新开始游戏
+    /// </summary>
     private void ResetFromDead() {
         TipMessagePanel.Instance.Hide(TipStyle.GameOver);
+        beDamage.Reset();
         animator.SetBool("is_dead", false);
         CanMove();
         transform.position = GameObject.Find(resetPos).transform.position;
@@ -276,10 +288,8 @@ public class CharacterControl : MonoBehaviour {
     private void SetSpeedX(float value) {
         if (value != 0) {
             // 设置角色转向
-            sprite.flipX = value < 0;
-            Vector3 attackRangePos = attackRange.transform.localPosition;
-            attackRangePos.x = value < 0 ? -Mathf.Abs(attackRangePos.x) : Mathf.Abs(attackRangePos.x);
-            attackRange.transform.localPosition = attackRangePos;
+            isFlip = value < 0;
+            transform.rotation = Quaternion.Euler(0, value < 0 ? 180 : 0, 0);
         }
         if (status == PlayerStatus.CROUCH) {
             value = 0;

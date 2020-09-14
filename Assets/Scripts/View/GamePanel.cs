@@ -16,11 +16,12 @@ public class GamePanel : Singleton<GamePanel> {
     }
 
 
-    public void InitHP(int num) {
-        hp = new List<GameObject>(num);
-        for (int i = 0; i < num; ++i) {
+    public void InitHP(int num, int max) {
+        hp = new List<GameObject>(max);
+        for (int i = 0; i < max; ++i) {
             hp.Add(Instantiate(hp_prefab, hp_panel));
         }
+        UpdateHP(num);
     }
 
     public void UpdateHP(int currentHP) {
@@ -31,7 +32,7 @@ public class GamePanel : Singleton<GamePanel> {
     }
 
     public void ResetHP() {
-        foreach(var item in hp) {
+        foreach (var item in hp) {
             item.GetComponent<Toggle>().isOn = true;
         }
     }

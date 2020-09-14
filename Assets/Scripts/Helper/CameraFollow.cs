@@ -6,6 +6,7 @@ using UnityEngine.PlayerLoop;
 public class CameraFollow : MonoBehaviour {
     #region 变量
     public Transform target;
+    private Transform player;
     private Vector3 speicalPosition;
     private float normalFOV;
     private float specialFOV;
@@ -13,17 +14,16 @@ public class CameraFollow : MonoBehaviour {
     private Transform cameraPos;
     private const float maxXoffset = 4;
     private const float maxYoffset = 3;
-    private Rigidbody2D rigid;
     private Camera thisCamera;
     private CharacterControl characterControl;
     #endregion
 
-    private void Awake() {
+        private void Awake() {
+        player = target;
         characterControl = target.GetComponent<CharacterControl>();
         thisCamera = GetComponent<Camera>();
         normalFOV = thisCamera.orthographicSize;
         specialFOV = normalFOV * 5 / 6;
-        rigid = target.GetComponent<Rigidbody2D>();
         cameraPos = this.transform;
         cameraPos.position = new Vector3(target.position.x, target.position.y, cameraPos.position.z);
     }
@@ -36,13 +36,16 @@ public class CameraFollow : MonoBehaviour {
             }
             if (Mathf.Abs(cameraPos.position.x - target.position.x) > maxXoffset || Mathf.Abs(cameraPos.position.y - target.position.y) > maxYoffset) {
                 Vector3 goal = new Vector3(target.position.x, target.position.y, cameraPos.position.z);
-                
+
                 cameraPos.position = Vector3.Lerp(cameraPos.position, goal, Time.deltaTime);
             }
         } else {
             cameraPos.position = Vector3.Lerp(cameraPos.position, new Vector3(speicalPosition.x, speicalPosition.y, cameraPos.position.z), 3 * Time.deltaTime);
             if (Vector2.Distance(cameraPos.position, speicalPosition) < 0.1f) {
                 thisCamera.orthographicSize = Mathf.MoveTowards(thisCamera.orthographicSize, specialFOV, Time.deltaTime);
+                if (Mathf.Abs(thisCamera.orthographicSize - specialFOV) < 0.1f) {
+                    ResetFollowTarget();
+                }
             }
         }
 
@@ -54,6 +57,8 @@ public class CameraFollow : MonoBehaviour {
     }
 
     public void ResetFollowTarget() {
+        target = player;
         isNormalFollow = true;
+        characterControl.CanMove();
     }
 }

@@ -24,7 +24,7 @@ public class LoadScenePanel : Singleton<LoadScenePanel> {
     private void UpdateProgress(float value) {
         progress.value = value;
         if(value >= 1) {
-            Invoke(nameof(Hide), 1);
+            Hide();
         }
     }
 
