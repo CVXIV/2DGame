@@ -17,9 +17,9 @@ TagManager:
   - 
   - ListenRange
   - Enemy
+  - Bullet
   - 
-  - 
-  - IgnorePlayer
+  - IgnoreLayer
   - Player
   - Cameras
   - 

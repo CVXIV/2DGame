@@ -18,7 +18,7 @@ public class CameraFollow : MonoBehaviour {
     private CharacterControl characterControl;
     #endregion
 
-        private void Awake() {
+    private void Awake() {
         player = target;
         characterControl = target.GetComponent<CharacterControl>();
         thisCamera = GetComponent<Camera>();
@@ -28,7 +28,7 @@ public class CameraFollow : MonoBehaviour {
         cameraPos.position = new Vector3(target.position.x, target.position.y, cameraPos.position.z);
     }
 
-    private void Update() {
+    private void LateUpdate() {
         if (isNormalFollow) {
             // 恢复镜头大小
             if (thisCamera.orthographicSize != normalFOV) {

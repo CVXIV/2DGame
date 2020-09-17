@@ -10,7 +10,7 @@ public enum AttackType {
 public class CharacterControl : MonoBehaviour {
     #region 变量
     private bool canMove = true;
-    private bool isFlip = false;
+    private bool isFlip;
     private BoxCollider2D box;
     private Rigidbody2D rigid;
     private SpriteRenderer sprite;
@@ -22,11 +22,10 @@ public class CharacterControl : MonoBehaviour {
     private bool isJump = false;
     private PlayerStatus status = PlayerStatus.IDEL;
     private PassPlatform passPlatform;
-    private ContactFilter2D groundMask;
     private PlayerBeDamage beDamage;
     private Damage damage;
     private string resetPos;
-    private readonly float attackGap = 1.0f;
+    private readonly float attackGap = 0.8f;
     public bool IsHasWeapon {
         get;
         set;
@@ -39,6 +38,9 @@ public class CharacterControl : MonoBehaviour {
     // 子弹生成位置
     private Transform bulletPos;
     private GameObject bullet;
+    // 推动物体
+    private ContactFilter2D contactFilter2D;
+    private readonly List<Collider2D> contacts = new List<Collider2D>();
     #endregion
 
     #region 回调
@@ -47,40 +49,60 @@ public class CharacterControl : MonoBehaviour {
         bulletPos = transform.Find("BulletPos");
         attackRange = transform.Find("AttackRange").GetComponent<BoxCollider2D>();
         attackCheck = attackRange.GetComponent<AttackRange>();
-        groundMask.SetLayerMask(1 << ConstantVar.groundLayer);
         box = GetComponent<BoxCollider2D>();
         rigid = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
-        IsHasWeapon = DataManager.Instance.GetData(ConstantVar.weapon_key) is Data1Value<bool> data && data.Value1;
+        //IsHasWeapon = DataManager.Instance.GetData(ConstantVar.weapon_key) is Data1Value<bool> data && data.Value1;
+        isFlip = transform.rotation.y == 1;
+        IsHasWeapon = true;
+
+        contactFilter2D.SetLayerMask(1 << ConstantVar.groundLayer);
     }
 
     private void Start() {
         InitBeDamage();
     }
 
-    private void Update() {
+    private void FixedUpdate() {
         if (canMove) {
-            // 方向判断
+            // 移动判断
             SetVelocity();
-
-            // 跳跃
-            SetJump();
-
-            // 下跳跃
-            SetDownJump();
-
-            // 攻击
-            SetAttack();
         }
         // 检测地面
         CheckIsOnGround();
-
         // 更新状态
         UpdateStatus();
-
         // 播放动画
         PlayAnimation();
+    }
+
+    private void Update() {
+        if (canMove) {
+            // 跳跃
+            SetJump();
+            // 下跳跃
+            SetDownJump();
+            // 攻击
+            SetAttack();
+        }
+    }
+
+    #endregion
+
+    #region 推动物体
+    private bool CheckIsPush() {
+        int count = rigid.GetContacts(contactFilter2D, contacts);
+        for (int i = 0; i < count; ++i) {
+            Pushable pushObj = contacts[i].gameObject.GetComponent<Pushable>();
+            if (pushObj != null) {
+                BoxCollider2D pushObjBox = pushObj.GetComponent<BoxCollider2D>();
+                if (pushObjBox != null && Mathf.Abs(pushObjBox.bounds.center.x - box.bounds.center.x) >= pushObjBox.bounds.extents.x + box.bounds.extents.x) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     #endregion
 
@@ -180,8 +202,12 @@ public class CharacterControl : MonoBehaviour {
         Invoke(nameof(AfterDead), 1);
     }
 
-
+    /// <summary>
+    /// 角色受到重置位置攻击时调用
+    /// </summary>
     private void ResetPos() {
+        SetSpeedX(0);
+        SetSpeedY(0);
         animator.SetBool("is_dead", false);
         CanMove();
         transform.position = GameObject.Find(resetPos).transform.position;
@@ -194,10 +220,7 @@ public class CharacterControl : MonoBehaviour {
     private void ResetFromDead() {
         TipMessagePanel.Instance.Hide(TipStyle.GameOver);
         beDamage.Reset();
-        animator.SetBool("is_dead", false);
-        CanMove();
-        transform.position = GameObject.Find(resetPos).transform.position;
-        SetInvincible(2);
+        ResetPos();
     }
     #endregion
 
@@ -212,12 +235,12 @@ public class CharacterControl : MonoBehaviour {
         Vector3 left = new Vector3(box.bounds.center.x - box.bounds.extents.x, box.bounds.center.y - box.bounds.extents.y, box.bounds.center.z);
         Vector3 right = new Vector3(box.bounds.center.x + box.bounds.extents.x, box.bounds.center.y - box.bounds.extents.y, box.bounds.center.z);
         // 发射4条射线确认角色是否处于地面
-        RaycastHit2D hit1 = Physics2D.Raycast(left, Vector3.down, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
-        RaycastHit2D hit2 = Physics2D.Raycast(right, Vector3.down, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
-        RaycastHit2D hit3 = Physics2D.Raycast(left, Vector3.up, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
-        RaycastHit2D hit4 = Physics2D.Raycast(right, Vector3.up, box.bounds.extents.y * 0.2f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D hit1 = Physics2D.Raycast(left, Vector3.down, box.bounds.extents.y * 0.5f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D hit2 = Physics2D.Raycast(right, Vector3.down, box.bounds.extents.y * 0.5f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D hit3 = Physics2D.Raycast(left, Vector3.up, box.bounds.extents.y * 0.5f, 1 << ConstantVar.groundLayer);
+        RaycastHit2D hit4 = Physics2D.Raycast(right, Vector3.up, box.bounds.extents.y * 0.5f, 1 << ConstantVar.groundLayer);
         isOnGround = hit1 || hit2 || hit3 || hit4;
-        Collider2D transformCollider = hit1.collider ?? (hit2.collider ?? (hit3.collider ?? hit4.collider));
+        Collider2D transformCollider = hit1.collider != null ? hit1.collider : (hit2.collider != null ? hit2.collider : (hit3.collider != null ? hit3.collider : hit4.collider));
         // 如果是空中平台，则需要判断是否触碰了上边的碰撞线
         if (isOnGround && transformCollider.CompareTag(SkyGroundTag)) {
             passPlatform = transformCollider.transform.GetComponent<PassPlatform>();
@@ -283,6 +306,7 @@ public class CharacterControl : MonoBehaviour {
         animator.SetBool("is_crouch", status == PlayerStatus.CROUCH);
         animator.SetBool("is_jump", status == PlayerStatus.JUMP);
         animator.SetFloat("speed_y", this.rigid.velocity.y);
+        animator.SetBool("is_push", CheckIsPush() && rigid.velocity.x != 0);
     }
 
     private void SetSpeedX(float value) {

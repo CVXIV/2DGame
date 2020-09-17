@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ConstantVar {
     public const string HP = "HP";
-    public static int MAXHP = 2;
+    public static int MAXHP = 5;
     public const string Volume = "Volume";
     public const string Sound = "Sound";
     public const int groundLayer = 20;
@@ -13,6 +13,8 @@ public class ConstantVar {
     public const string EnemyLayer = "Enemy";
     public const string ListenLayer = "ListenRange";
     public const string SkyGroundTag = "SkyGround";
+    public const string BulletLayer = "Bullet";
+    public const string IgnoreLayer = "IgnoreLayer";
     public const int sceneStart = 0;
     public const int sceneLeven1 = 1;
     public const int sceneLeven2 = 2;

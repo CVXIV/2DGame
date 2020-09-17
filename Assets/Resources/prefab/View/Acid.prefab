@@ -27,8 +27,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4153070635329214441}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0.7071068, w: 0}
-  m_LocalPosition: {x: 0, y: -0.37, z: 0}
-  m_LocalScale: {x: 0.4273665, y: 0.4115008, z: 0.3793677}
+  m_LocalPosition: {x: 7.46, y: -0.967, z: 0}
+  m_LocalScale: {x: 1.9342194, y: 0.41150087, z: 0.18605468}
   m_Children: []
   m_Father: {fileID: 4153070635890777228}
   m_RootOrder: 0
@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 4153070635890777231}
   - component: {fileID: 4153070635890777229}
   - component: {fileID: 4153070635890777226}
+  - component: {fileID: 116987301}
   m_Layer: 0
   m_Name: Acid
   m_TagString: Untagged
@@ -140,9 +141,9 @@ BoxCollider2D:
   m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 1
-  m_UsedByEffector: 0
+  m_UsedByEffector: 1
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 7.509451, y: -0.9913492}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -153,7 +154,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4.335001, y: 3.8644955}
+  m_Size: {x: 19.3539, y: 1.8817968}
   m_EdgeRadius: 0
 --- !u!114 &4153070635890777229
 MonoBehaviour:
@@ -181,4 +182,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 1
   damageType: 1
-  resetPos: Pos2
+  resetPos: Level4_Pos1
+--- !u!253 &116987301
+BuoyancyEffector2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4153070635890777230}
+  m_Enabled: 1
+  m_UseColliderMask: 1
+  m_ColliderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_SurfaceLevel: 0
+  m_Density: 40
+  m_LinearDrag: 5
+  m_AngularDrag: 5
+  m_FlowAngle: 0
+  m_FlowMagnitude: 0
+  m_FlowVariation: 0
