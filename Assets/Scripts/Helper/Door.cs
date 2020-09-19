@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Door : MonoBehaviour {
+public class Door : MonoBehaviour, ISwitchAble {
     private Animator animator;
     private SwitchStatus status = SwitchStatus.CLOSE;
     private readonly string animName = "open_door";

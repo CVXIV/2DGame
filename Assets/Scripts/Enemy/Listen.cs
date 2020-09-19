@@ -7,10 +7,10 @@ public class Listen : MonoBehaviour {
     // 监听范围
     public float listenRange;
     private CircleCollider2D circleCollider2D;
-    private Chomper chomper;
+    private EnemyBase enemy;
 
     private void Awake() {
-        chomper = transform.parent.GetComponent<Chomper>();
+        enemy = transform.parent.GetComponent<EnemyBase>();
         InitListenRange();
     }
 
@@ -21,15 +21,19 @@ public class Listen : MonoBehaviour {
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
-        if (chomper.IsLock()) {
+        if (enemy.IsLock()) {
             return;
         }
         if (collision.CompareTag(ConstantVar.PlayTag)) {
-            // 设置为奔跑状态
-            chomper.SetStatus(ChomperStatus.RUN);
             // 跑向目标
-            chomper.RunSpeed = collision.transform.position.x > chomper.transform.position.x ? Mathf.Abs(chomper.RunSpeed) : -Mathf.Abs(chomper.RunSpeed);
-            chomper.SetSpeedX(chomper.RunSpeed);
+            if (Mathf.Abs(collision.transform.position.x - enemy.transform.position.x) < 0.1f) {
+                enemy.SetStatus(EnemyStatus.WAIT);
+            } else {
+                // 设置为奔跑状态
+                enemy.SetStatus(EnemyStatus.RUN);
+                enemy.RunSpeed = collision.transform.position.x > enemy.transform.position.x ? Mathf.Abs(enemy.RunSpeed) : -Mathf.Abs(enemy.RunSpeed);
+                enemy.SetSpeedX(enemy.RunSpeed);
+            }
         }
     }
 
@@ -39,7 +43,7 @@ public class Listen : MonoBehaviour {
 
     private void OnTriggerExit2D(Collider2D collision) {
         if (collision.CompareTag(ConstantVar.PlayTag)) {
-            chomper.SetStatus(ChomperStatus.IDEL);
+            enemy.SetStatus(EnemyStatus.IDEL);
         }
     }
 

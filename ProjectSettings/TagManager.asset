@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Enemy
   - SkyGround
+  - Trigger
   layers:
   - Default
   - TransparentFX
@@ -18,7 +19,7 @@ TagManager:
   - ListenRange
   - Enemy
   - Bullet
-  - 
+  - AttackRange
   - IgnoreLayer
   - Player
   - Cameras

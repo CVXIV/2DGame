@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Acid : MonoBehaviour {
-
+public class Spikes : MonoBehaviour {
+    public Sprite[] sprites;
+    private SpriteRenderer spriteRenderer;
     private Damage damage;
     private Dictionary<GameObject, float> object_to_damage;
     private readonly float damageGap = 1.0f;
-
     private void Awake() {
+        spriteRenderer = GetComponent<SpriteRenderer>();
         damage = GetComponent<Damage>();
+        spriteRenderer.sprite = sprites[Random.Range(0, sprites.Length)];
         object_to_damage = new Dictionary<GameObject, float>();
     }
 
@@ -28,7 +30,7 @@ public class Acid : MonoBehaviour {
         // 对游戏物体造成伤害
         GameObject damageObj = collision.gameObject;
         if (object_to_damage.ContainsKey(damageObj)) {
-            if(object_to_damage[damageObj] >= damageGap) {
+            if (object_to_damage[damageObj] >= damageGap) {
                 damage.Attack(damageObj);
                 object_to_damage[damageObj] = 0;
             }
@@ -46,4 +48,5 @@ public class Acid : MonoBehaviour {
     private void OnTriggerStay2D(Collider2D collision) {
         this.OnTriggerEnter2D(collision);
     }
+
 }

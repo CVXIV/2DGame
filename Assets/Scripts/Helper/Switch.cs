@@ -2,31 +2,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum SwitchStatus {
-    CLOSE = 0,
-    OPEN = 1
-}
 
-public class Switch : MonoBehaviour {
-    public Door door;
-    public Sprite[] sprites;
-    private SpriteRenderer render;
-    private SwitchStatus status = SwitchStatus.CLOSE;
+
+public class Switch : SwitchBase {
     private GameObject point_light;
+    private GameObject realControlObj;
 
-    private void Awake() {
-        render = GetComponent<SpriteRenderer>();
+
+    protected override void Awake() {
+        base.Awake();
+        if (target != null) {
+            target = target.transform.Find("sprite").gameObject;
+        }
         point_light = transform.Find("Light").gameObject;
         point_light.SetActive(false);
     }
 
     private void OnCollisionEnter2D(Collision2D collision) {
-        if (collision.gameObject.layer == LayerMask.NameToLayer(ConstantVar.BulletLayer)) {
-            status = status == SwitchStatus.OPEN ? SwitchStatus.CLOSE : SwitchStatus.OPEN;
-            render.sprite = sprites[(int)status];
-            point_light.SetActive(status == SwitchStatus.OPEN);
-            door.ControlDoor(status);
+        if (collision.collider.CompareTag(ConstantVar.TriggerTag)) {
+            React();
         }
+    }
+
+    public override void OnReact() {
+        base.OnReact();
+        point_light.SetActive(status == SwitchStatus.OPEN);
     }
 
 }

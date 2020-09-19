@@ -6,26 +6,27 @@ public class Attack : MonoBehaviour {
     // 攻击范围
     public float attackRange;
     private CircleCollider2D circleCollider2D;
-    private Chomper chomper;
+    private EnemyBase enemy;
 
     private void Awake() {
-        chomper = transform.parent.GetComponent<Chomper>();
+        enemy = transform.parent.GetComponent<EnemyBase>();
         InitAttackRange();
     }
 
     private void InitAttackRange() {
         circleCollider2D = GetComponent<CircleCollider2D>();
         circleCollider2D.radius = attackRange;
-        Physics2D.SetLayerCollisionMask(LayerMask.NameToLayer(ConstantVar.ListenLayer), LayerMask.GetMask(ConstantVar.PlayLayer));
+        Physics2D.SetLayerCollisionMask(LayerMask.NameToLayer(ConstantVar.AttackLayer), LayerMask.GetMask(ConstantVar.PlayLayer));
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
-        if (chomper.IsLock()) {
+        if (enemy.IsLock()) {
             return;
         }
         if (collision.CompareTag(ConstantVar.PlayTag)) {
             // 设置为攻击状态
-            chomper.SetStatus(ChomperStatus.ATTACK);
+            enemy.SetStatus(EnemyStatus.ATTACK);
+            enemy.SetRotation(collision.transform.position.x < enemy.transform.position.x);
         }
     }
 
@@ -35,7 +36,7 @@ public class Attack : MonoBehaviour {
 
     private void OnTriggerExit2D(Collider2D collision) {
         if (collision.CompareTag(ConstantVar.PlayTag)) {
-            chomper.SetStatus(ChomperStatus.IDEL);
+            enemy.SetStatus(EnemyStatus.IDEL);
         }
     }
 }

@@ -11,6 +11,7 @@ public class CharacterControl : MonoBehaviour {
     #region 变量
     private bool canMove = true;
     private bool isFlip;
+    private bool isPush;
     private BoxCollider2D box;
     private Rigidbody2D rigid;
     private SpriteRenderer sprite;
@@ -87,7 +88,6 @@ public class CharacterControl : MonoBehaviour {
             SetAttack();
         }
     }
-
     #endregion
 
     #region 推动物体
@@ -107,9 +107,8 @@ public class CharacterControl : MonoBehaviour {
     #endregion
 
     #region 攻击，受伤，死亡相关
-
-    private void SetAttack() {
-        if (IsHasWeapon && isReadyAttack) {
+    private void SetAttack() {     
+        if (!isPush && IsHasWeapon && isReadyAttack) {
             if (Input.GetAxisRaw("Fire1") != 0 || Input.GetButtonDown("Fire1")) {
                 OnAttack(AttackType.NormalAttack);
                 isReadyAttack = false;
@@ -119,7 +118,6 @@ public class CharacterControl : MonoBehaviour {
                 isReadyAttack = false;
                 Invoke(nameof(ResetAttack), attackGap);
             }
-
         }
     }
 
@@ -306,7 +304,7 @@ public class CharacterControl : MonoBehaviour {
         animator.SetBool("is_crouch", status == PlayerStatus.CROUCH);
         animator.SetBool("is_jump", status == PlayerStatus.JUMP);
         animator.SetFloat("speed_y", this.rigid.velocity.y);
-        animator.SetBool("is_push", CheckIsPush() && rigid.velocity.x != 0);
+        animator.SetBool("is_push", isPush);
     }
 
     private void SetSpeedX(float value) {
@@ -342,6 +340,8 @@ public class CharacterControl : MonoBehaviour {
         if (status == PlayerStatus.IDEL && Input.GetAxisRaw("Vertical") == -1) {
             status = PlayerStatus.CROUCH;
         }
+
+        isPush = CheckIsPush() && status == PlayerStatus.RUN;
     }
 
 }

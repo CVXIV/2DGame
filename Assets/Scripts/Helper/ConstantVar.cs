@@ -11,13 +11,17 @@ public class ConstantVar {
     public const string PlayTag = "Player";
     public const string PlayLayer = "Player";
     public const string EnemyLayer = "Enemy";
-    public const string ListenLayer = "ListenRange";
+    public const string ListenLayer = "ListenRange"; 
+    public const string AttackLayer = "AttackRange";
     public const string SkyGroundTag = "SkyGround";
     public const string BulletLayer = "Bullet";
     public const string IgnoreLayer = "IgnoreLayer";
     public const int sceneStart = 0;
     public const int sceneLeven1 = 1;
     public const int sceneLeven2 = 2;
+
+    // tag
+    public const string TriggerTag = "Trigger";
 
     // 内存数据的key
     public const string weapon_key = "weapon_key";

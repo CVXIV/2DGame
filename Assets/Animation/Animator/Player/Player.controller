@@ -1870,9 +1870,6 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: attack_type
     m_EventTreshold: 0
-  - m_ConditionMode: 2
-    m_ConditionEvent: is_push
-    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -6859389866550268848}
   m_Solo: 0
