@@ -9,10 +9,10 @@ public class MovePlatformSwitchAble : MovePlatform, ISwitchAble {
         base.Awake();
     }
 
-    protected override void Update() {
+    protected override void FixedUpdate() {
         currentSpeed = status == SwitchStatus.OPEN ? speed : 0;
-        base.Update();
-    }
+        base.FixedUpdate();
+    } 
 
     public void ControlDoor(SwitchStatus switchStatus) {
         status = switchStatus;

@@ -13,6 +13,9 @@ public enum EnemyStatus {
 
 public class EnemyBase : MonoBehaviour {
     #region 属性
+    public float attackRange;
+    public float listenRange;
+
     protected Damage damage;
     protected BeDamage beDamage;
     protected Transform checkPath;
@@ -26,6 +29,7 @@ public class EnemyBase : MonoBehaviour {
     protected float forwardDistance;
 
     protected float idel_time;
+    protected Transform curTarget = null;
     public float WalkSpeed { get; set; }
     public float RunSpeed { get; set; }
     #endregion
@@ -46,9 +50,11 @@ public class EnemyBase : MonoBehaviour {
     }
 
     protected virtual void FixedUpdate() {
+        CheckTarget();
         ActionOfStatus();
         PlayAnimation();
     }
+
 
     protected virtual void InitNumParm() {
         idel_time = 3.0f;
@@ -81,6 +87,32 @@ public class EnemyBase : MonoBehaviour {
     /// 动画最后一帧调用
     /// </summary>
     protected virtual void AfterDead() { Destroy(gameObject); }
+
+
+    /// <summary>
+    /// 检测周围是否有攻击目标
+    /// </summary>
+    protected virtual void CheckTarget() {
+        Collider2D result = Physics2D.OverlapCircle(transform.position, listenRange, LayerMask.GetMask(ConstantVar.PlayLayer));
+        if (result != null && !IsLock()) {
+            if (Vector2.Distance(transform.position, result.transform.position) <= attackRange) {
+                // 设置为攻击状态
+                curTarget = result.transform;
+                SetStatus(EnemyStatus.ATTACK);
+                SetRotation(result.transform.position.x < transform.position.x);
+            } else {
+                // 跑向目标
+                if (Mathf.Abs(result.transform.position.x - transform.position.x) < 0.1f) {
+                    SetStatus(EnemyStatus.WAIT);
+                } else {
+                    // 设置为奔跑状态
+                    SetStatus(EnemyStatus.RUN);
+                    RunSpeed = result.transform.position.x > transform.position.x ? Mathf.Abs(RunSpeed) : -Mathf.Abs(RunSpeed);
+                    SetSpeedX(RunSpeed);
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// 每个状态下角色的行为
@@ -155,6 +187,7 @@ public class EnemyBase : MonoBehaviour {
     }
 
     public void SetRotation(bool isFlip) {
+        this.isFlip = isFlip;
         transform.rotation = Quaternion.Euler(0, isFlip ? 180 : 0, 0);
     }
 
@@ -164,6 +197,7 @@ public class EnemyBase : MonoBehaviour {
 
     public void UnLock() {
         isLock = false;
+        SetStatus(EnemyStatus.IDEL);
     }
 
     public bool IsLock() {

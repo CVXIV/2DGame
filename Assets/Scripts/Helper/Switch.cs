@@ -6,23 +6,32 @@ using UnityEngine;
 
 public class Switch : SwitchBase {
     private GameObject point_light;
-    private GameObject realControlObj;
 
 
     protected override void Awake() {
         base.Awake();
-        if (target != null) {
-            target = target.transform.Find("sprite").gameObject;
-        }
         point_light = transform.Find("Light").gameObject;
         point_light.SetActive(false);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision) {
-        if (collision.collider.CompareTag(ConstantVar.TriggerTag)) {
+    protected override void InitControlTargets() {
+        if (targets != null) {
+            controlTargets = new List<ISwitchAble>();
+            foreach (GameObject target in targets) {
+                ISwitchAble switchAble = target.transform.Find("sprite").GetComponent<ISwitchAble>();
+                if (switchAble != null) {
+                    controlTargets.Add(switchAble);
+                }
+            }
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision) {
+        if (collision.CompareTag(ConstantVar.TriggerTag)) {
             React();
         }
     }
+
 
     public override void OnReact() {
         base.OnReact();

@@ -11,25 +11,28 @@ public interface ISwitchAble {
 }
 
 public class SwitchBase : MonoBehaviour {
-    public GameObject target;
+    public List<GameObject> targets;
     public Sprite[] sprites;
     protected SpriteRenderer render;
     protected SwitchStatus status = SwitchStatus.CLOSE;
+    protected List<ISwitchAble> controlTargets;
 
 
     protected virtual void Awake() {
         render = GetComponent<SpriteRenderer>();
+        InitControlTargets();
     }
+
+    protected virtual void InitControlTargets() { }
 
     public virtual void React() {
         status = status == SwitchStatus.OPEN ? SwitchStatus.CLOSE : SwitchStatus.OPEN;
         render.sprite = sprites[(int)status];
         OnReact();
-        if (target == null) {
+        if (controlTargets == null || controlTargets.Count == 0) {
             return;
         }
-        ISwitchAble switchAble = target.GetComponent<ISwitchAble>();
-        if (switchAble != null) {
+        foreach(ISwitchAble switchAble in controlTargets) {
             switchAble.ControlDoor(status);
         }
     }

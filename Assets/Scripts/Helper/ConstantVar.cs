@@ -15,6 +15,7 @@ public class ConstantVar {
     public const string AttackLayer = "AttackRange";
     public const string SkyGroundTag = "SkyGround";
     public const string BulletLayer = "Bullet";
+    public const string EnemyBulletLayer = "EnemyBullet";
     public const string IgnoreLayer = "IgnoreLayer";
     public const int sceneStart = 0;
     public const int sceneLeven1 = 1;

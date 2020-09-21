@@ -13,9 +13,10 @@ public class MovePlatform : MonoBehaviour {
     private readonly List<Collider2D> contacts = new List<Collider2D>();
     private ContactFilter2D contactFilter2D;
     private BoxCollider2D box;
+    private Vector2 prePos;
     protected virtual void Awake() {
         contactFilter2D.SetLayerMask(LayerMask.GetMask(ConstantVar.EnemyLayer, ConstantVar.PlayLayer));
-        startPos = transform.position;
+        prePos = startPos = transform.position;
         currentSpeed = speed;
         rigid = GetComponent<Rigidbody2D>();
         box = GetComponent<BoxCollider2D>();
@@ -23,18 +24,12 @@ public class MovePlatform : MonoBehaviour {
 
     private void TransportObj() {
         int count = Physics2D.OverlapCollider(box, contactFilter2D, contacts);
-        //int count = rigid.GetContacts(contactFilter2D, contacts);
+        // int count = rigid.GetContacts(contactFilter2D, contacts);
         for (int i = 0; i < count; ++i) {
             // 只需要x分量的速度
-            float velocity_x = (curTarget - new Vector2(transform.position.x, transform.position.y)).normalized.x * currentSpeed;
+            float velocity_x = rigid.velocity.x;
             contacts[i].attachedRigidbody.AddForce(new Vector2(contacts[i].attachedRigidbody.mass * velocity_x / Time.fixedDeltaTime, 0));
         }
-    }
-
-    protected virtual void Update() {
-        curTarget = isForth ? endPos : startPos;
-        transform.position = Vector2.MoveTowards(transform.position, curTarget, currentSpeed * Time.deltaTime);
-        isForth = Vector2.Distance(transform.position, curTarget) != 0 ? isForth : !isForth;
     }
 
     /// <summary>
@@ -45,7 +40,11 @@ public class MovePlatform : MonoBehaviour {
         yield return new WaitForFixedUpdate();
     }
 
-    private void FixedUpdate() {
+    protected virtual void FixedUpdate() {
+        curTarget = isForth ? endPos : startPos;
+        rigid.velocity = (curTarget - new Vector2(transform.position.x, transform.position.y)).normalized * currentSpeed;
+        isForth = Mathf.Abs(curTarget.x - prePos.x) + Mathf.Abs(curTarget.x - transform.position.x) == Mathf.Abs(prePos.x - transform.position.x) ? !isForth : isForth;
+        prePos = transform.position;
         StartCoroutine(AfterFixedUpdate());
     }
 }

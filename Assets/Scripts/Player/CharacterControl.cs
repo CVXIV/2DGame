@@ -143,7 +143,7 @@ public class CharacterControl : MonoBehaviour {
 
     private void MakeBullet() {
         if (bullet == null) {
-            bullet = Resources.Load<GameObject>("prefab/View/Bullet");
+            bullet = Resources.Load<GameObject>("prefab/FlyingProb/Bullet");
         }
         GameObject newBullet = Instantiate(bullet);
         newBullet.transform.position = bulletPos.position;

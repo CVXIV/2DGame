@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Door : SwitchControlBase {
-
+public class Bridge : SwitchControlBase {
     protected override void InitAnim() {
-        this.animName = "open_door";
+        this.animName = "bridge";
     }
 }

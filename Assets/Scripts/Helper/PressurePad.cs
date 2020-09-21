@@ -6,29 +6,48 @@ public class PressurePad : SwitchBase {
     private GameObject point_light;
     private EdgeCollider2D edgeCollider;
     private readonly float availRange = 0.2f;
+    private HashSet<GameObject> currentPreObj;
 
     protected override void Awake() {
         base.Awake();
         edgeCollider = GetComponent<EdgeCollider2D>();
+        currentPreObj = new HashSet<GameObject>();
         point_light = transform.Find("Light").gameObject;
         point_light.SetActive(false);
     }
 
+    protected override void InitControlTargets() {
+        if (targets != null) {
+            controlTargets = new List<ISwitchAble>();
+            foreach (GameObject target in targets) {
+                ISwitchAble switchAble = target.GetComponent<ISwitchAble>();
+                if (switchAble != null) {
+                    controlTargets.Add(switchAble);
+                }
+            }
+        }
+    }
 
-    private void OnCollisionExit2D(Collision2D collision) {
-        if (collision.collider.CompareTag(ConstantVar.TriggerTag)) {
+
+    private void OnTriggerExit2D(Collider2D collision) {
+        if (collision.CompareTag(ConstantVar.TriggerTag) || collision.CompareTag(ConstantVar.PlayTag)) {
             if (status == SwitchStatus.OPEN) {
+                currentPreObj.Remove(collision.gameObject);
                 React();
             }
         }
     }
 
-    private void OnCollisionStay2D(Collision2D collision) {
-        if (collision.collider.CompareTag(ConstantVar.TriggerTag)) {
+    private void OnTriggerStay2D(Collider2D collision) {
+        if (collision.CompareTag(ConstantVar.TriggerTag) || collision.CompareTag(ConstantVar.PlayTag)) {
             if (status == SwitchStatus.CLOSE && Mathf.Abs(edgeCollider.bounds.center.x - collision.transform.position.x) < availRange) {
+                currentPreObj.Add(collision.gameObject);
                 React();
             } else if (status == SwitchStatus.OPEN && Mathf.Abs(edgeCollider.bounds.center.x - collision.transform.position.x) >= availRange) {
-                React();
+                currentPreObj.Remove(collision.gameObject);
+                if (currentPreObj.Count == 0) {
+                    React();
+                }
             }
         }
     }
