@@ -17,10 +17,8 @@ public class Key : MonoBehaviour {
                 throw new System.Exception("未找到门！");
             }
             CameraFollow cameraFollow = Camera.main.GetComponent<CameraFollow>();
-            // 人物不可移动
-            cameraFollow.target.GetComponent<CharacterControl>().NotMove();
             // 修改门的状态
-            cameraFollow.FollowTarget(hubDoor.transform);
+            cameraFollow.FollowTarget(hubDoor.GetComponent<SpriteRenderer>().bounds.center);
             hubDoor.SetStatus((HubDoorStatus)count);
         }
     }

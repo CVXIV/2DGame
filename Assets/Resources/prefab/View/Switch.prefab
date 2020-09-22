@@ -102,6 +102,9 @@ MonoBehaviour:
   sprites:
   - {fileID: 21300000, guid: 95e6e0c1a1ea1804e95813fba7ecb4c6, type: 3}
   - {fileID: 21300002, guid: 95e6e0c1a1ea1804e95813fba7ecb4c6, type: 3}
+  unityEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!61 &8460959348371257522
 BoxCollider2D:
   m_ObjectHideFlags: 0

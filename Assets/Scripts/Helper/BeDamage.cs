@@ -13,7 +13,7 @@ public class BeDamage : MonoBehaviour {
         }
     }
 
-    public Action<DamageType, string> onHurt;
+    public Action<DamageType, string, int> onHurt;
     public Action<string> onDead;
     private bool isEnable = true;
 
@@ -31,8 +31,12 @@ public class BeDamage : MonoBehaviour {
             if (health <= 0) {
                 onDead?.Invoke(resetPos);
             } else {
-                onHurt?.Invoke(damageType, resetPos);
+                onHurt?.Invoke(damageType, resetPos, value);
             }
         }
+    }
+
+    public virtual void RecoverHealth(int value) {
+        health += value;
     }
 }

@@ -23,7 +23,17 @@ public class SwitchBase : MonoBehaviour {
         InitControlTargets();
     }
 
-    protected virtual void InitControlTargets() { }
+    protected virtual void InitControlTargets() {
+        if (targets != null) {
+            controlTargets = new List<ISwitchAble>();
+            foreach (GameObject target in targets) {
+                ISwitchAble switchAble = target.CompareTag(ConstantVar.DoorTag) ? target.transform.Find("sprite").GetComponent<ISwitchAble>() : target.GetComponent<ISwitchAble>();
+                if (switchAble != null) {
+                    controlTargets.Add(switchAble);
+                }
+            }
+        }
+    }
 
     public virtual void React() {
         status = status == SwitchStatus.OPEN ? SwitchStatus.CLOSE : SwitchStatus.OPEN;
@@ -32,7 +42,7 @@ public class SwitchBase : MonoBehaviour {
         if (controlTargets == null || controlTargets.Count == 0) {
             return;
         }
-        foreach(ISwitchAble switchAble in controlTargets) {
+        foreach (ISwitchAble switchAble in controlTargets) {
             switchAble.ControlDoor(status);
         }
     }

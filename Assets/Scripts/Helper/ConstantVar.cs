@@ -23,6 +23,8 @@ public class ConstantVar {
 
     // tag
     public const string TriggerTag = "Trigger";
+    public const string DoorTag = "door";
+    public const string MovePlatformTag = "moveplatform";
 
     // 内存数据的key
     public const string weapon_key = "weapon_key";

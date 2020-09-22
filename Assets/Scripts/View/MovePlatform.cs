@@ -14,9 +14,10 @@ public class MovePlatform : MonoBehaviour {
     private ContactFilter2D contactFilter2D;
     private BoxCollider2D box;
     private Vector2 prePos;
+    private Vector2 curPos;
     protected virtual void Awake() {
         contactFilter2D.SetLayerMask(LayerMask.GetMask(ConstantVar.EnemyLayer, ConstantVar.PlayLayer));
-        prePos = startPos = transform.position;
+        prePos = startPos = transform.localPosition;
         currentSpeed = speed;
         rigid = GetComponent<Rigidbody2D>();
         box = GetComponent<BoxCollider2D>();
@@ -42,9 +43,10 @@ public class MovePlatform : MonoBehaviour {
 
     protected virtual void FixedUpdate() {
         curTarget = isForth ? endPos : startPos;
-        rigid.velocity = (curTarget - new Vector2(transform.position.x, transform.position.y)).normalized * currentSpeed;
-        isForth = Mathf.Abs(curTarget.x - prePos.x) + Mathf.Abs(curTarget.x - transform.position.x) == Mathf.Abs(prePos.x - transform.position.x) ? !isForth : isForth;
-        prePos = transform.position;
+        curPos = transform.localPosition;
+        rigid.velocity = (curTarget - curPos).normalized * currentSpeed;
+        isForth = (curTarget - prePos).normalized == (curPos - curTarget).normalized ? !isForth : isForth;
+        prePos = transform.localPosition;
         StartCoroutine(AfterFixedUpdate());
     }
 }

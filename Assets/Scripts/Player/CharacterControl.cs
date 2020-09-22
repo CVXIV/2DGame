@@ -151,7 +151,7 @@ public class CharacterControl : MonoBehaviour {
     }
 
 
-    private void OnHurt(DamageType damageType, string resetPos) {
+    private void OnHurt(DamageType damageType, string resetPos, int damageNum) {
         this.resetPos = resetPos;
         switch (damageType) {
             case DamageType.Normal:
@@ -262,7 +262,6 @@ public class CharacterControl : MonoBehaviour {
     public void NotMove() {
         this.canMove = false;
         this.SetSpeedX(0);
-        //this.SetSpeedY(0);
     }
 
     public void CanMove() {
@@ -329,7 +328,7 @@ public class CharacterControl : MonoBehaviour {
     private void UpdateStatus() {
         status = PlayerStatus.IDEL;
 
-        if (rigid.velocity.x != 0) {
+        if (Mathf.Abs(rigid.velocity.x) == speedX) {
             status = PlayerStatus.RUN;
         }
 

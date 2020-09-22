@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Events;
 
 
 public class Switch : SwitchBase {
+    public UnityEvent<Vector3, float> unityEvent;
     private GameObject point_light;
 
 
@@ -14,21 +15,12 @@ public class Switch : SwitchBase {
         point_light.SetActive(false);
     }
 
-    protected override void InitControlTargets() {
-        if (targets != null) {
-            controlTargets = new List<ISwitchAble>();
-            foreach (GameObject target in targets) {
-                ISwitchAble switchAble = target.transform.Find("sprite").GetComponent<ISwitchAble>();
-                if (switchAble != null) {
-                    controlTargets.Add(switchAble);
-                }
-            }
-        }
-    }
-
     private void OnTriggerEnter2D(Collider2D collision) {
         if (collision.CompareTag(ConstantVar.TriggerTag)) {
             React();
+            if (status == SwitchStatus.OPEN) {
+                unityEvent?.Invoke(transform.position, 1);
+            }
         }
     }
 

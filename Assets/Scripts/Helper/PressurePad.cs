@@ -16,18 +16,6 @@ public class PressurePad : SwitchBase {
         point_light.SetActive(false);
     }
 
-    protected override void InitControlTargets() {
-        if (targets != null) {
-            controlTargets = new List<ISwitchAble>();
-            foreach (GameObject target in targets) {
-                ISwitchAble switchAble = target.GetComponent<ISwitchAble>();
-                if (switchAble != null) {
-                    controlTargets.Add(switchAble);
-                }
-            }
-        }
-    }
-
 
     private void OnTriggerExit2D(Collider2D collision) {
         if (collision.CompareTag(ConstantVar.TriggerTag) || collision.CompareTag(ConstantVar.PlayTag)) {
