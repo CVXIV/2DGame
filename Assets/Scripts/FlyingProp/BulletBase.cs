@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BulletBase : MonoBehaviour {
+public abstract class BulletBase : MonoBehaviour {
     #region 变量
     protected Rigidbody2D rigid;
     protected Collider2D coll;
     protected Animator animator;
     protected Damage damage;
-    protected float MaximumLifeTime = 20.0f;
+    protected float MaximumLifeTime;
     protected float lifeTime = 0.0f;
     #endregion
 
@@ -18,7 +18,6 @@ public class BulletBase : MonoBehaviour {
         damage = GetComponent<Damage>();
         rigid = GetComponent<Rigidbody2D>();
         InitCollider();
-        InitCollisionLayer();
         InitNumParm();
     }
 
@@ -29,11 +28,9 @@ public class BulletBase : MonoBehaviour {
         }
     }
 
-    protected virtual void InitCollisionLayer() { }
-
-    protected virtual void InitCollider() { }
-    protected virtual void InitNumParm() { }
-    protected virtual void Bomb() { }
+    protected abstract void InitCollider();
+    protected abstract void InitNumParm();
+    protected abstract void Bomb();
 
 
     // 动画最后一帧调用

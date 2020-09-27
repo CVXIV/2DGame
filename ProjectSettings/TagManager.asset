@@ -9,6 +9,7 @@ TagManager:
   - Trigger
   - door
   - moveplatform
+  - StaticGround
   layers:
   - Default
   - TransparentFX
@@ -26,7 +27,7 @@ TagManager:
   - Player
   - Cameras
   - EnemyBullet
-  - EnemyShield
+  - 
   - 
   - 
   - 

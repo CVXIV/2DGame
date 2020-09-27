@@ -22,11 +22,6 @@ public class TraceBullet : BulletBase {
         coll = GetComponent<CircleCollider2D>();
     }
 
-    protected override void InitCollisionLayer() {
-        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer(ConstantVar.EnemyBulletLayer), ConstantVar.groundLayer);
-        Physics2D.SetLayerCollisionMask(LayerMask.NameToLayer(ConstantVar.EnemyBulletLayer), ~LayerMask.GetMask(ConstantVar.EnemyLayer, ConstantVar.EnemyBulletLayer, ConstantVar.IgnoreLayer));
-    }
-
     private void FixedUpdate() {
         if (!isMoveAble) {
             rigid.velocity = Vector2.zero;

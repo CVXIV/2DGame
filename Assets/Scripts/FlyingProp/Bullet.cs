@@ -1,12 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 public class Bullet : BulletBase {
 
-    protected override void InitCollisionLayer() {
-        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer(ConstantVar.BulletLayer), LayerMask.NameToLayer(ConstantVar.PlayLayer));
-        Physics2D.SetLayerCollisionMask(LayerMask.NameToLayer(ConstantVar.BulletLayer), ~LayerMask.GetMask(ConstantVar.BulletLayer, ConstantVar.IgnoreLayer));
+    private ContactFilter2D contactFilter2D;
+    private readonly List<Collider2D> colls = new List<Collider2D>();
+
+    protected override void Awake() {
+        base.Awake();
+        contactFilter2D.SetLayerMask(LayerMask.GetMask(ConstantVar.EnemyLayer, ConstantVar.GroundLayerName));
     }
 
     protected override void InitCollider() {
@@ -18,16 +22,20 @@ public class Bullet : BulletBase {
         animator.SetBool("is_bomb", true);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision) {
-        // 造成伤害
-        if (!collision.gameObject.CompareTag(ConstantVar.PlayTag)) {
+    private void FixedUpdate() {
+        int count = Physics2D.OverlapBox(coll.bounds.center, 2 * coll.bounds.extents, 0, contactFilter2D, colls);
+        if (count > 0) {
             Bomb();
-            damage.Attack(collision.gameObject);
+            damage.Attack(colls[0].gameObject);
         }
     }
 
-    public void SetSpeed(bool isRight, float speed = 10f) {
+    public void SetSpeed(bool isRight, float speed = 30f) {
         rigid.velocity = new Vector2(isRight ? speed : -speed, 0);
         transform.rotation = Quaternion.Euler(0, isRight ? 0 : 180, 0);
+    }
+
+    protected override void InitNumParm() {
+        MaximumLifeTime = 20f;
     }
 }

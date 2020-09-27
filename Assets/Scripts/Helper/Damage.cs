@@ -11,6 +11,14 @@ public class Damage : MonoBehaviour {
     public int damage;
     public DamageType damageType;
     public string resetPos;
+    public LayerMask hittableLayers;
+    [HideInInspector]
+    public ContactFilter2D attackContactFilter;
+
+    private void Awake() {
+        attackContactFilter.layerMask = hittableLayers;
+        attackContactFilter.useLayerMask = true;
+    }
 
     public void Attack(GameObject gb) {
         BeDamage beDamage = gb.GetComponent<BeDamage>();

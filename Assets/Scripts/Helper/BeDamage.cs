@@ -4,6 +4,7 @@ using UnityEngine;
 public class BeDamage : MonoBehaviour {
     [SerializeField]
     protected int health;
+    protected int maxHealth;
     public int Health {
         get {
             return health;
@@ -16,6 +17,10 @@ public class BeDamage : MonoBehaviour {
     public Action<DamageType, string, int> onHurt;
     public Action<string> onDead;
     private bool isEnable = true;
+
+    protected virtual void Awake() {
+        maxHealth = health;
+    }
 
     public void Enable() {
         isEnable = true;
@@ -39,4 +44,9 @@ public class BeDamage : MonoBehaviour {
     public virtual void RecoverHealth(int value) {
         health += value;
     }
+
+    public virtual void ResetHealth() {
+        health = maxHealth;
+    }
+
 }

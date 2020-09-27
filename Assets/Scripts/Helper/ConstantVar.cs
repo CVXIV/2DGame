@@ -8,7 +8,7 @@ public class ConstantVar {
     public const string Volume = "Volume";
     public const string Sound = "Sound";
     public const int groundLayer = 20;
-    public const string PlayTag = "Player";
+    public const string GroundLayerName = "ground";
     public const string PlayLayer = "Player";
     public const string EnemyLayer = "Enemy";
     public const string ListenLayer = "ListenRange"; 
@@ -22,9 +22,12 @@ public class ConstantVar {
     public const int sceneLeven2 = 2;
 
     // tag
+    public const string PlayTag = "Player";
     public const string TriggerTag = "Trigger";
     public const string DoorTag = "door";
     public const string MovePlatformTag = "moveplatform";
+    public const string groundLayerTag = "StaticGround";
+
 
     // 内存数据的key
     public const string weapon_key = "weapon_key";
