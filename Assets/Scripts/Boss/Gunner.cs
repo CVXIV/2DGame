@@ -23,38 +23,35 @@ public class Gunner : MonoBehaviour {
     public BeDamage shieldHealth;
     public Animator animator;
     public Damage damage;
+    public Transform grenadePos;
+    public Transform checkPath;
 
     private ContactFilter2D groundFilter;
-    private readonly List<ContactPoint2D> groundPoints = new List<ContactPoint2D>();
+    private readonly List<RaycastHit2D> groundHit = new List<RaycastHit2D>();
     private GameObject lightningAttack;
     private Collider2D shieldColl;
     private Collider2D gunnerColl;
     private Rigidbody2D rigid;
-    private GunnerStatus gunnerStatus = GunnerStatus.ATTACK;
+    private GunnerStatus gunnerStatus = GunnerStatus.WALK;
     // 护盾消失后BOSS无法行动的时间
     private readonly float disabledTime = 4f;
-    private Transform grenadePos;
     private Vector3 attackTarget;
     private bool isDead = false;
     private bool isFlip = false;
     private int currentAttackType = 0;
     private readonly float laserTrackingSpeed = 3.0f;
+    private readonly float walkSpeed = 1.2f;
     #endregion
 
     private void Awake() {
         if (player == null) {
-            throw new System.Exception("Please confirm jif the player exists");
+            throw new System.Exception("Please confirm if the player exists");
         }
         gunnerColl = GetComponent<BoxCollider2D>();
         shieldColl = shieldHealth.GetComponent<CircleCollider2D>();
         rigid = GetComponent<Rigidbody2D>();
         groundFilter.SetLayerMask(LayerMask.GetMask(ConstantVar.GroundLayerName));
         InitBedamage();
-        InitGrenade();
-    }
-
-    private void InitGrenade() {
-        grenadePos = transform.Find("GrenadePos");
     }
 
 
@@ -65,7 +62,6 @@ public class Gunner : MonoBehaviour {
 
         shieldHealth.onHurt += ShieldOnHurt;
         shieldHealth.onDead += ShieldOnDead;
-
     }
 
     #region 受伤相关
@@ -142,7 +138,7 @@ public class Gunner : MonoBehaviour {
 
     private void Attack() {
         SetRotation(attackTarget.x > transform.position.x);
-        //currentAttackType = Random.Range(1, 3);
+        //currentAttackType = Random.Range(1, 4);
         currentAttackType = 3;
         switch (currentAttackType) {
             case 1:
@@ -162,7 +158,11 @@ public class Gunner : MonoBehaviour {
             case GunnerStatus.IDEL:
                 break;
             case GunnerStatus.WALK:
-                rigid.velocity = -transform.right * 1.5f;
+                if (CheckPath()) {
+                    rigid.velocity = -transform.right * walkSpeed;
+                } else {
+                    SetRotation(!isFlip);
+                }
                 break;
             case GunnerStatus.DISABLED:
                 break;
@@ -199,17 +199,11 @@ public class Gunner : MonoBehaviour {
     private void MakeLightling() {
         LightningManage newBullet = Instantiate(lightningManage);
         lightningAttack = newBullet.gameObject;
-        int count = rigid.GetContacts(groundFilter, groundPoints);
+
+        int count = Physics2D.Raycast(lightningEffect.transform.position, Vector3.down - transform.right, groundFilter, groundHit);
         if (count > 0) {
-            float max_y = groundPoints[0].point.y;
-            for (int i = 1; i < count; ++i) {
-                if (max_y < groundPoints[i].point.y) {
-                    max_y = groundPoints[i].point.y;
-                }
-            }
-            float delta_y = Mathf.Abs(lightningEffect.transform.position.y - max_y);
-            Vector3 direction = -transform.right * delta_y - transform.up * delta_y;
-            Vector2 groundPoint = lightningEffect.transform.position + direction;
+            // 取最近地面的坐标
+            Vector2 groundPoint = groundHit[0].point;
             List<LineInfo> infos = new List<LineInfo> {
             new LineInfo { start = lightningEffect.transform.position, end = groundPoint},
             new LineInfo { start = lightningEffect.transform.position, end = groundPoint},
@@ -229,5 +223,19 @@ public class Gunner : MonoBehaviour {
     private void SetRotation(bool isFlip) {
         this.isFlip = isFlip;
         transform.rotation = Quaternion.Euler(0, isFlip ? 180 : 0, 0);
+    }
+
+    /// <summary>
+    /// 检测前方是否可以前行
+    /// </summary>
+    /// <returns></returns>
+    protected virtual bool CheckPath() {
+        // 首先检测脚下是否有地面
+        RaycastHit2D down = Physics2D.Raycast(checkPath.position, Vector2.down, 1f, 1 << ConstantVar.groundLayer);
+        // 其次检测面前是否有障碍物
+        // 计算物体坐标和碰撞体之间的差值
+        float forwardDistance = Mathf.Abs(gunnerColl.bounds.center.x + transform.right.x * gunnerColl.bounds.extents.x - transform.position.x);
+        RaycastHit2D forward = Physics2D.BoxCast(gunnerColl.bounds.center, 2 * gunnerColl.bounds.extents, 0, -transform.right, forwardDistance, 1 << ConstantVar.groundLayer);
+        return down && !forward;
     }
 }

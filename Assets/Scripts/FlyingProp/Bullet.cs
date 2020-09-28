@@ -19,6 +19,7 @@ public class Bullet : BulletBase {
 
     protected override void Bomb() {
         coll.enabled = false;
+        rigid.velocity = Vector2.zero;
         animator.SetBool("is_bomb", true);
     }
 
