@@ -47,7 +47,7 @@ public class Projectile : BulletBase {
         }
         // 防止速度过快而穿透物体
         RaycastHit2D hit = Physics2D.CircleCast(coll.bounds.center, circleCollider2D.radius, direction, speed * Time.fixedDeltaTime, LayerMask.GetMask(ConstantVar.PlayLayer, ConstantVar.GroundLayerName));
-        if (hit) {            
+        if (hit) {
             isToBomb = true;
             collideInfo.collPoint = hit.centroid;
             collideInfo.target = hit.collider.gameObject;

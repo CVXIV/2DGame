@@ -13,4 +13,5 @@ public class LightningManage : MonoBehaviour {
             }
         }
     }
+
 }

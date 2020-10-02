@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using CVXIV;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,46 +12,66 @@ public enum GunnerStatus {
 }
 
 public class Gunner : MonoBehaviour {
+
+    [System.Serializable]
+    public class BossRound {
+        public int bossHP = 10;
+        public int shieldHP = 10;
+    }
+
     #region 变量
+    public BossRound[] rounds;
+    private int round = 0;
+
+    [Space]
+    public LightningManage lightningManage;
     public Projectile projectile;
     public float projectileSpeed = 40f;
     public GrenadeK grenade;
     public Collider2D player;
     public GameObject beamLaser;
-    public LightningManage lightningManage;
-    public GameObject lightningEffect;
     public BeDamage gunnerHealth;
     public BeDamage shieldHealth;
     public Animator animator;
     public Damage damage;
+    public Transform lightningEffect;
     public Transform grenadePos;
     public Transform checkPath;
 
-    private ContactFilter2D groundFilter;
-    private readonly List<RaycastHit2D> groundHit = new List<RaycastHit2D>();
-    private GameObject lightningAttack;
-    private Collider2D shieldColl;
+    private GameObject lightning;
     private Collider2D gunnerColl;
     private Rigidbody2D rigid;
-    private GunnerStatus gunnerStatus = GunnerStatus.WALK;
+    private ContactFilter2D groundFilter;
+    private readonly List<RaycastHit2D> groundHit = new List<RaycastHit2D>();
     // 护盾消失后BOSS无法行动的时间
-    private readonly float disabledTime = 4f;
+    private readonly float disabledTime = 3f;
+    // 切换阶段所需的时间
+    private readonly float shiftRoundTime = 2f;
     private Vector3 attackTarget;
-    private bool isDead = false;
     private bool isFlip = false;
-    private int currentAttackType = 0;
     private readonly float laserTrackingSpeed = 3.0f;
-    private readonly float walkSpeed = 1.2f;
+    private readonly float WalkSpeed = 1.9f;
+    // 延迟调用时间
+    private readonly float beamDelay = 1.8f;
+    private readonly float grenadeDelay = 1.1f;
+    private readonly float lightningDelay = 1.8f;
+    private readonly float lightningTime = 0.4f;  
+    private readonly float shieldFadeDelay = 1.0f;
+    private readonly float explodeDelay = 4.5f;
+    private readonly float deadDelay = 2.8f;
+    private readonly float walkDelay = 1f;
+    private readonly float haltDelay = 0.35f;
+    // AI
+    private Root AI;
     #endregion
 
     private void Awake() {
         if (player == null) {
             throw new System.Exception("Please confirm if the player exists");
         }
-        gunnerColl = GetComponent<BoxCollider2D>();
-        shieldColl = shieldHealth.GetComponent<CircleCollider2D>();
-        rigid = GetComponent<Rigidbody2D>();
         groundFilter.SetLayerMask(LayerMask.GetMask(ConstantVar.GroundLayerName));
+        gunnerColl = GetComponent<BoxCollider2D>();
+        rigid = GetComponent<Rigidbody2D>();
         InitBedamage();
     }
 
@@ -58,10 +79,89 @@ public class Gunner : MonoBehaviour {
     private void InitBedamage() {
         gunnerHealth.onHurt += GunnerOnHurt;
         gunnerHealth.onDead += GunnerOnDead;
-        gunnerHealth.Disable();
 
-        shieldHealth.onHurt += ShieldOnHurt;
-        shieldHealth.onDead += ShieldOnDead;
+/*        shieldHealth.onHurt += ShieldOnHurt;
+        shieldHealth.onDead += ShieldOnDead;*/
+    }
+
+    private void OnEnable() {
+        AI = FakeAI.Root();
+        AI.OpenBranch(
+            FakeAI.Repeat(rounds.Length).OpenBranch(
+                FakeAI.Call(NextRound),
+                FakeAI.While(IsAlive).OpenBranch(
+                    FakeAI.While(IsShieldOn).OpenBranch(
+                        FakeAI.Call(ModifyDirection),
+                        FakeAI.RandomSequence(null).OpenBranch(
+                            FakeAI.Root().OpenBranch(
+                                // 将WaitForAnimatorState放到开头，因为如果处于其他状态那么设置Trigger后不一定马上执行对应的动画从而导致Wait偏差
+                                // 另外需要注意Trigger设置完动画并不是马上执行
+                                FakeAI.WaitForAnimatorState(animator, "idel"),
+                                FakeAI.Trigger(animator, "beam_attack", true),
+                                FakeAI.Wait(beamDelay),
+                                FakeAI.Call(MakeBullet),
+                                FakeAI.Wait(0.5f)
+                                ),
+                            FakeAI.Root().OpenBranch(
+                                FakeAI.WaitForAnimatorState(animator, "idel"),
+                                FakeAI.Trigger(animator, "lightning_attack", true), 
+                                FakeAI.Wait(lightningDelay),
+                                FakeAI.Call(MakeLightning, DestroyLightning),
+                                FakeAI.Wait(lightningTime),
+                                FakeAI.Call(DestroyLightning),
+                                FakeAI.Wait(0.5f)
+                            ),
+                            FakeAI.Root().OpenBranch(
+                                FakeAI.WaitForAnimatorState(animator, "idel"),
+                                FakeAI.Trigger(animator, "grenade_attack", true),
+                                FakeAI.Wait(grenadeDelay),
+                                FakeAI.Call(MakeGrenade),
+                                FakeAI.Wait(0.5f)
+                            ),
+                            FakeAI.If(CheckPath).OpenBranch(
+                                FakeAI.WaitForAnimatorState(animator, "idel"),
+                                FakeAI.Trigger(animator, "walk", true),
+                                FakeAI.Call(Walk, Halt),
+                                FakeAI.Wait(walkDelay),
+                                FakeAI.Call(Halt),
+                                FakeAI.Wait(haltDelay),
+                                FakeAI.Call(Walk, Halt),
+                                FakeAI.Wait(walkDelay),
+                                FakeAI.Call(Halt),
+                                FakeAI.Wait(haltDelay)
+                            )
+                        )
+                    ),
+                    FakeAI.Trigger(animator, "disabled", true),
+                    FakeAI.Wait(shieldFadeDelay),
+                    FakeAI.Call(ShieldOnDead),
+                    FakeAI.Wait(disabledTime),
+                    FakeAI.Call(ResetShield),
+                    FakeAI.Trigger(animator, "enabled", true)
+                ),
+                FakeAI.If(IsMiddleRound).OpenBranch(
+                    FakeAI.Wait(shiftRoundTime),
+                    FakeAI.Trigger(animator, "enabled", true)
+                )
+            ),
+            FakeAI.Trigger(animator, "death", true),
+            FakeAI.Wait(explodeDelay),
+            FakeAI.Call(AfterExplode),
+            FakeAI.Wait(deadDelay),
+            FakeAI.Call(AfterDead),
+            FakeAI.Terminate()
+        );
+    }
+
+    private void Update() {
+        AI.Execute();
+
+        // 激光追踪玩家
+        attackTarget = player.bounds.center;
+        Vector2 targetMovement = (attackTarget - beamLaser.transform.position).normalized;
+        // 不用right的原因是当沿Z轴旋转180度时，会自动改为沿Y轴旋转180度，导致激光不可见
+        //beamLaser.transform.right = -Vector3.Slerp(-beamLaser.transform.right, targetMovement, laserTrackingSpeed * Time.deltaTime);
+        beamLaser.transform.rotation = Quaternion.Slerp(beamLaser.transform.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.left, targetMovement)), laserTrackingSpeed * Time.deltaTime);
     }
 
     #region 受伤相关
@@ -70,10 +170,51 @@ public class Gunner : MonoBehaviour {
     }
 
     private void GunnerOnDead(string resetPos) {
-        gunnerStatus = GunnerStatus.DEAD;
-        isDead = true;
         shieldHealth.gameObject.SetActive(false);
         gunnerHealth.Disable();
+    }
+
+    private void ShieldOnHurt(DamageType damageType, string resetPos, int damageNum) {
+        // todo
+    }
+
+    private void ShieldOnDead() {
+        shieldHealth.gameObject.SetActive(false);
+        gunnerHealth.Enable();
+    }
+
+    /// <summary>
+    /// 重置护盾血量
+    /// </summary>
+    private void ResetShield() {
+        shieldHealth.gameObject.SetActive(true);
+        gunnerHealth.Disable();
+        shieldHealth.ResetHealth();
+    }
+
+    private bool IsAlive() {
+        return gunnerHealth.Health > 0;
+    }
+
+    private bool IsShieldOn() {
+        return shieldHealth.Health > 0;
+    }
+
+    #endregion
+
+    #region 流程相关
+    private void NextRound() {
+        // 更行BOSS和护盾的血量最大值
+        gunnerHealth.UpdateMaxHealth(rounds[round].bossHP);
+        shieldHealth.UpdateMaxHealth(rounds[round].shieldHP);
+        gunnerHealth.Disable();
+        shieldHealth.Enable();
+        shieldHealth.gameObject.SetActive(true);
+        round++;
+    }
+
+    private bool IsMiddleRound() {
+        return round < rounds.Length;
     }
 
     private void AfterDead() {
@@ -82,104 +223,6 @@ public class Gunner : MonoBehaviour {
 
     private void AfterExplode() {
         gunnerColl.enabled = false;
-    }
-
-    private void ShieldOnHurt(DamageType damageType, string resetPos, int damageNum) {
-        // todo
-    }
-
-    private void ShieldOnDead(string resetPos) {
-        gunnerStatus = GunnerStatus.DISABLED;
-        Invoke(nameof(ResetShield), disabledTime);
-    }
-
-    // 动画调用
-    private void AfterShieldDisappear() {
-        gunnerHealth.Enable();
-        shieldColl.enabled = false;
-    }
-
-    /// <summary>
-    /// 重置护盾血量
-    /// </summary>
-    private void ResetShield() {
-        gunnerStatus = GunnerStatus.IDEL;
-        gunnerHealth.Disable();
-        shieldColl.enabled = true;
-        shieldHealth.ResetHealth();
-    }
-    #endregion
-
-    private void Update() {
-        attackTarget = player.bounds.center;
-        // 激光追踪玩家
-        Vector2 targetMovement = (attackTarget - beamLaser.transform.position).normalized;
-        beamLaser.transform.right = -Vector3.Slerp(-beamLaser.transform.right, targetMovement, laserTrackingSpeed * Time.deltaTime);
-    }
-
-
-    private void FixedUpdate() {
-        ActionOfStatus();
-        UpdateStatus();
-    }
-
-
-    private void GrenadeAttack() {
-        animator.SetTrigger("grenade_attack");
-    }
-
-    private void BeamAttack() {
-        animator.SetTrigger("beam_attack");
-    }
-
-    private void LightningAttack() {
-        animator.SetTrigger("lightning_attack");
-    }
-
-    private void Attack() {
-        SetRotation(attackTarget.x > transform.position.x);
-        //currentAttackType = Random.Range(1, 4);
-        currentAttackType = 3;
-        switch (currentAttackType) {
-            case 1:
-                GrenadeAttack();
-                break;
-            case 2:
-                BeamAttack();
-                break;
-            case 3:
-                LightningAttack();
-                break;
-        }
-    }
-
-    private void ActionOfStatus() {
-        switch (gunnerStatus) {
-            case GunnerStatus.IDEL:
-                break;
-            case GunnerStatus.WALK:
-                if (CheckPath()) {
-                    rigid.velocity = -transform.right * walkSpeed;
-                } else {
-                    SetRotation(!isFlip);
-                }
-                break;
-            case GunnerStatus.DISABLED:
-                break;
-            case GunnerStatus.ATTACK:
-                Attack();
-                break;
-            case GunnerStatus.DEAD:
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void UpdateStatus() {
-        animator.SetBool("is_walk", gunnerStatus == GunnerStatus.WALK);
-        animator.SetBool("is_disabled", gunnerStatus == GunnerStatus.DISABLED);
-        animator.SetBool("is_dead", gunnerStatus == GunnerStatus.DEAD);
     }
 
     private void MakeBullet() {
@@ -196,29 +239,45 @@ public class Gunner : MonoBehaviour {
         newBullet.LockTarget(-transform.right, damage.resetPos);
     }
 
-    private void MakeLightling() {
-        LightningManage newBullet = Instantiate(lightningManage);
-        lightningAttack = newBullet.gameObject;
-
-        int count = Physics2D.Raycast(lightningEffect.transform.position, Vector3.down - transform.right, groundFilter, groundHit);
+    private void MakeLightning() {
+        int count = Physics2D.Raycast(lightningEffect.position, Vector3.down - transform.right, groundFilter, groundHit);
         if (count > 0) {
+            LightningManage example = Instantiate(lightningManage);
+            example.transform.position = lightningEffect.position;
+            lightning = example.gameObject;
             // 取最近地面的坐标
             Vector2 groundPoint = groundHit[0].point;
             List<LineInfo> infos = new List<LineInfo> {
-            new LineInfo { start = lightningEffect.transform.position, end = groundPoint},
-            new LineInfo { start = lightningEffect.transform.position, end = groundPoint},
+            new LineInfo { start = lightningEffect.position, end = groundPoint},
+            new LineInfo { start = lightningEffect.position, end = groundPoint},
             new LineInfo { start = groundPoint, end = groundPoint + Vector2.left * 20},
             new LineInfo { start = groundPoint, end = groundPoint + Vector2.right * 20},
             new LineInfo { start = groundPoint, end = groundPoint + Vector2.left * 20},
             new LineInfo { start = groundPoint, end = groundPoint + Vector2.right * 20}
             };
-            newBullet.InitLines(infos);
+            example.InitLines(infos);
         }
     }
 
-    private void ClearLightning() {
-        Destroy(lightningAttack);
+    private void DestroyLightning() {
+        Destroy(lightning);
     }
+
+    private void Walk() {
+        rigid.velocity = -transform.right * WalkSpeed;
+    }
+
+    private void Halt() {
+        rigid.velocity = Vector2.zero;
+    }
+
+    private void ModifyDirection() {
+        bool isFlip = player.bounds.center.x > gunnerColl.bounds.center.x;
+        SetRotation(isFlip);
+    }
+
+    #endregion
+
 
     private void SetRotation(bool isFlip) {
         this.isFlip = isFlip;

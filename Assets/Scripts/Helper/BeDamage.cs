@@ -9,9 +9,6 @@ public class BeDamage : MonoBehaviour {
         get {
             return health;
         }
-        set {
-            health = value;
-        }
     }
 
     public Action<DamageType, string, int> onHurt;
@@ -47,6 +44,10 @@ public class BeDamage : MonoBehaviour {
 
     public virtual void ResetHealth() {
         health = maxHealth;
+    }
+
+    public void UpdateMaxHealth(int value) {
+        health = maxHealth = value;
     }
 
 }

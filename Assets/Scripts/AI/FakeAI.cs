@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using BTAI;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace CVXIV {
@@ -35,31 +36,333 @@ namespace CVXIV {
             return new WaitForAnimatorState(animator, name, layer);
         }
 
-        public static Action Call(System.Action method) {
-            return new Action(method);
+        public static Action Call(System.Action method, System.Action cancelMethod = null) {
+            return new Action(method, cancelMethod);
         }
 
         public static Action RunCoroutine(System.Func<IEnumerator<AIState>> coroutineFactory) {
             return new Action(coroutineFactory);
         }
 
-        public static WaitForAnimatorSignal WaitForAnimatorSignal(Animator animator, string name, int layer = 0) {
-            return new WaitForAnimatorSignal(animator, name, layer); 
+        public static WaitForAnimatorSignal WaitForAnimatorSignal(Animator animator, string stateName, string signal, int layer = 0) {
+            return new WaitForAnimatorSignal(animator, stateName, signal, layer);
         }
 
         public static Terminate Terminate() {
-            return new Terminate(); 
+            return new Terminate();
         }
 
         public static Log Log(string msg) {
-            return new Log(msg); 
+            return new Log(msg);
+        }
+
+        public static Sequence Sequence() {
+            return new Sequence();
+        }
+
+        public static Selector Selector(bool shuffle) {
+            return new Selector(shuffle);
+        }
+
+        public static ConditionalBranch If(System.Func<bool> method) {
+            return new ConditionalBranch(method);
+        }
+
+        public static While While(System.Func<bool> method) {
+            return new While(method);
+        }
+
+        public static Root Root() {
+            return new Root();
+        }
+
+        public static Repeat Repeat(int totalCount) {
+            return new Repeat(totalCount);
+        }
+
+        public static RandomSequence RandomSequence(int[] weights) {
+            return new RandomSequence(weights);
         }
 
     }
     #region 基类
     public abstract class AINode {
         public abstract AIState Execute();
+        public virtual void CancelExecute() { }
     }
+
+    public abstract class Branch : AINode {
+
+        protected int activeIndex = 0;
+        protected List<AINode> elements = new List<AINode>();
+
+        public virtual Branch OpenBranch(params AINode[] parms) {
+            for (int i = 0; i < parms.Length; ++i) {
+                elements.Add(parms[i]);
+            }
+            return this;
+        }
+
+        public virtual void ResetElements() {
+            activeIndex = 0;
+            foreach (AINode node in elements) {
+                node.CancelExecute();
+                if (node is Branch branch) {
+                    branch.ResetElements();
+                }
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// 整块执行，不管是否成功
+    /// </summary>
+    public abstract class Block : Branch {
+        public override AIState Execute() {
+            switch (elements[activeIndex].Execute()) {
+                case AIState.Continue:
+                    return AIState.Continue;
+                default:
+                    activeIndex++;
+                    if (activeIndex == elements.Count) {
+                        activeIndex = 0;
+                        return AIState.Success;
+                    }
+                    return AIState.Continue;
+            }
+        }
+    }
+
+    #endregion
+
+    #region 游戏逻辑框架
+    public class Sequence : Branch {
+        public override AIState Execute() {
+            switch (elements[activeIndex].Execute()) {
+                case AIState.Failure:
+                    activeIndex = 0;
+                    return AIState.Failure;
+                case AIState.Success:
+                    activeIndex++;
+                    if (activeIndex == elements.Count) {
+                        activeIndex = 0;
+                        return AIState.Success;
+                    }
+                    return AIState.Continue;
+                case AIState.Continue:
+                    return AIState.Continue;
+                case AIState.Abort:
+                    activeIndex = 0;
+                    return AIState.Abort;
+            }
+            throw new System.Exception("This should never happen, but clearly it has.Why??");
+        }
+    }
+
+    /// <summary>
+    /// 运行每个元素，直到返回Success；如果全部Failure，则返回Failure
+    /// </summary>
+    public class Selector : Branch {
+
+        /// <summary>
+        /// 是否打乱元素顺序
+        /// </summary>
+        /// <param name="shuffle"></param>
+        public Selector(bool shuffle) {
+            if (shuffle) {
+                AINode temp;
+                int swapIndex;
+                for (int i = elements.Count - 1; i >= 0; --i) {
+                    swapIndex = Random.Range(0, i + 1);
+                    temp = elements[swapIndex];
+                    elements[swapIndex] = elements[i];
+                    elements[i] = temp;
+                }
+            }
+        }
+
+        public override AIState Execute() {
+            switch (elements[activeIndex].Execute()) {
+                case AIState.Failure:
+                    activeIndex++;
+                    if (activeIndex == elements.Count) {
+                        activeIndex = 0;
+                        return AIState.Failure;
+                    }
+                    return AIState.Continue;
+                case AIState.Success:
+                    activeIndex = 0;
+                    return AIState.Success;
+                case AIState.Continue:
+                    return AIState.Continue;
+                case AIState.Abort:
+                    activeIndex = 0;
+                    return AIState.Abort;
+            }
+            throw new System.Exception("This should never happen, but clearly it has.Why??");
+        }
+    }
+
+    public class ConditionalBranch : Block {
+
+        private readonly System.Func<bool> method;
+        private bool isPassed = false;
+
+        public ConditionalBranch(System.Func<bool> method) {
+            this.method = method;
+        }
+
+        public override AIState Execute() {
+            if (!isPassed) {
+                isPassed = method();
+            }
+            if (isPassed) {
+                AIState result = base.Execute();
+                if (result != AIState.Continue) {
+                    isPassed = false;
+                }
+                return result;
+            }
+            return AIState.Failure;
+        }
+    }
+
+    /// <summary>
+    /// 类似While循环那样执行元素
+    /// </summary>
+    public class While : Block {
+
+        private readonly System.Func<bool> method;
+
+        public While(System.Func<bool> method) {
+            this.method = method;
+        }
+
+        public override AIState Execute() {
+            // 如果方法返回false，则跳出循环并重置索引
+            if (!method()) {
+                ResetElements();
+                return AIState.Failure;
+            }
+            base.Execute();
+            return AIState.Continue;
+        }
+    }
+
+    public class Root : Branch {
+        private bool isTerminated = false;
+
+        public override AIState Execute() {
+            if (isTerminated) {
+                return AIState.Abort;
+            }
+            switch (elements[activeIndex].Execute()) {
+                case AIState.Continue:
+                    return AIState.Continue;
+                case AIState.Abort:
+                    isTerminated = true;
+                    return AIState.Abort;
+                default:
+                    activeIndex++;
+                    if (activeIndex == elements.Count) {
+                        activeIndex = 0;
+                        return AIState.Success;
+                    }
+                    return AIState.Continue;
+            }
+        }
+    }
+
+    public class Repeat : Block {
+        private readonly int totalCount;
+        private int currentCount = 0;
+
+        public Repeat(int totalCount) {
+            this.totalCount = totalCount;
+        }
+
+        public override AIState Execute() {
+            if (currentCount < totalCount) {
+                AIState result = base.Execute();
+                switch (result) {
+                    case AIState.Success:
+                        currentCount++;
+                        if (currentCount == totalCount) {
+                            currentCount = 0;
+                            return AIState.Success;
+                        }
+                        return AIState.Continue;
+                    default:
+                        return AIState.Continue;
+                }
+            }
+            return AIState.Success;
+        }
+    }
+
+    public class RandomSequence : Block {
+
+        private readonly int[] weights = null;
+        private int[] cumulativeWeights = null;
+
+        public RandomSequence(int[] weights) {
+            activeIndex = -1;
+            this.weights = weights;
+        }
+
+        /// <summary>
+        /// 权重默认为1
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns></returns>
+        public override Branch OpenBranch(params AINode[] elements) {
+            cumulativeWeights = new int[elements.Length];
+            for (int i = 0; i < cumulativeWeights.Length; ++i) {
+                int currentWeight;
+                int preWeight = 0;
+                if (weights == null || i >= weights.Length) {
+                    currentWeight = 1;
+                } else {
+                    currentWeight = weights[i];
+                }
+                if (i > 0) {
+                    preWeight = cumulativeWeights[i - 1];
+                }
+                cumulativeWeights[i] = currentWeight + preWeight;
+            }
+            return base.OpenBranch(elements);
+        }
+
+        public override AIState Execute() {
+            if (activeIndex == -1) {
+                PickOneElement();
+            }
+            AIState result = elements[activeIndex].Execute();
+            switch (result) {
+                case AIState.Continue:
+                    return AIState.Continue;
+                default:
+                    PickOneElement();
+                    return result;
+            }
+        }
+
+        /// <summary>
+        /// 根据权重的大小随机选择一个元素执行
+        /// </summary>
+        private void PickOneElement() {
+            int choice = Random.Range(cumulativeWeights[0], cumulativeWeights[cumulativeWeights.Length - 1] + 1);
+            for (int i = 0; i < cumulativeWeights.Length; ++i) {
+                if (choice <= cumulativeWeights[i]) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+        }
+
+    }
+
     #endregion
 
     #region Unity框架相关
@@ -139,6 +442,11 @@ namespace CVXIV {
             }
             return AIState.Continue;
         }
+
+        public override void CancelExecute() {
+            futureTime = -1;
+        }
+
     }
 
     /// <summary>
@@ -193,12 +501,12 @@ namespace CVXIV {
         private readonly int id;
         internal bool isSet = false;
 
-        public WaitForAnimatorSignal(Animator animator, string stateName, int layer = 0) {
+        public WaitForAnimatorSignal(Animator animator, string stateName, string signal, int layer = 0) {
             id = Animator.StringToHash(stateName);
             if (!animator.HasState(layer, id)) {
                 Debug.LogError("The " + stateName + " does not exist");
             } else {
-                SendSignal.Register(animator, stateName, this);
+                SendSignal.Register(animator, signal, this);
             }
         }
 
@@ -241,11 +549,13 @@ namespace CVXIV {
     public class Action : AINode {
 
         private readonly System.Action method;
+        private readonly System.Action cancelMethod;
         private readonly System.Func<IEnumerator<AIState>> coroutineFactory;
         private IEnumerator<AIState> coroutine;
 
-        public Action(System.Action method) {
+        public Action(System.Action method, System.Action cancelMethod) {
             this.method = method;
+            this.cancelMethod = cancelMethod;
         }
 
         public Action(System.Func<IEnumerator<AIState>> coroutineFactory) {
@@ -270,6 +580,10 @@ namespace CVXIV {
                 }
                 return result;
             }
+        }
+
+        public override void CancelExecute() {
+            cancelMethod?.Invoke();
         }
     }
     #endregion
