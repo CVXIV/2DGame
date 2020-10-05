@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3199287790991357898}
   - component: {fileID: 3199287790991357899}
   - component: {fileID: 3199287790991357900}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: PressurePad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -128,7 +128,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc0b9149b0740ee4b9e6ea67f2ac34a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  targets:
+  - {fileID: 0}
   sprites:
   - {fileID: 21300002, guid: c812bc8c71a77a949ad4ddc0cf831fc1, type: 3}
   - {fileID: 21300000, guid: c812bc8c71a77a949ad4ddc0cf831fc1, type: 3}

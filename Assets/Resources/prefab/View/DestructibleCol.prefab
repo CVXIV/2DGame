@@ -37,7 +37,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7738894059460561989}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 76.45431, y: 19.372896, z: 2.148476}
+  m_LocalPosition: {x: 76.45431, y: 19.372896, z: 0}
   m_LocalScale: {x: 2.2, y: 2.2, z: 0}
   m_Children:
   - {fileID: 7738894059751768528}
@@ -661,7 +661,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7738894060765266496}
   - component: {fileID: 7738894060765266499}
-  m_Layer: 0
+  m_Layer: 20
   m_Name: DestructibleCol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -677,7 +677,7 @@ Transform:
   m_GameObject: {fileID: 7738894060765266498}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 80.5897, y: 23.519106, z: -2.148476}
-  m_LocalScale: {x: 1, y: 0.95, z: 1}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 1}
   m_Children:
   - {fileID: 7008112257361938092}
   - {fileID: 7738894059460562042}
@@ -1185,6 +1185,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 731768774284317676, guid: 6c2b9e2d304584747b6113cb2a442fa4,
+        type: 3}
+      propertyPath: m_Layer
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 731768774284317677, guid: 6c2b9e2d304584747b6113cb2a442fa4,
         type: 3}
       propertyPath: m_Offset.x
@@ -1243,7 +1248,7 @@ PrefabInstance:
     - target: {fileID: 731768774284317679, guid: 6c2b9e2d304584747b6113cb2a442fa4,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.148476
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 731768774284317679, guid: 6c2b9e2d304584747b6113cb2a442fa4,
         type: 3}

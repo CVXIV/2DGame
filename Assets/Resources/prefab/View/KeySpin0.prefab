@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8619433108964405508}
   - component: {fileID: 8619433108964405627}
   - component: {fileID: 8619433108964405624}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: KeySpin0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -142,3 +142,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55cd6e5953a19f04d9073970e8465172, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hubDoor: {fileID: 0}

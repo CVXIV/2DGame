@@ -66,10 +66,8 @@ public class CharacterControl : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        if (canMove) {
-            // 移动判断
-            SetVelocity();
-        }
+        // 移动判断
+        SetVelocity(canMove);
         // 检测地面
         CheckIsOnGround();
         // 更新状态
@@ -194,7 +192,7 @@ public class CharacterControl : MonoBehaviour {
         Invoke(nameof(ResetFromDead), 3);
     }
 
-    private void OnDead(string resetPos) {
+    private void OnDead(string resetPos, int damageNum) {
         this.resetPos = resetPos;
         PrepareDead();
         Invoke(nameof(AfterDead), 1);
@@ -261,15 +259,14 @@ public class CharacterControl : MonoBehaviour {
 
     public void NotMove() {
         this.canMove = false;
-        this.SetSpeedX(0);
     }
 
     public void CanMove() {
         this.canMove = true;
     }
 
-    private void SetVelocity() {
-        SetSpeedX(Input.GetAxisRaw("Horizontal") * speedX);
+    private void SetVelocity(bool canMove) {
+        SetSpeedX(canMove ? Input.GetAxisRaw("Horizontal") * speedX : 0);
     }
 
     private void SetJump() {

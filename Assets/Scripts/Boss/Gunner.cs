@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum GunnerStatus {
     IDEL,
@@ -61,6 +62,16 @@ public class Gunner : MonoBehaviour {
     private readonly float deadDelay = 2.8f;
     private readonly float walkDelay = 1f;
     private readonly float haltDelay = 0.35f;
+    private float distancePerWalk;
+
+    [Header("UI")]
+    public Slider healthSlider;
+    public Slider shieldSlider;
+    public Animator healthAnimator;
+    public Animator shieldAnimator;
+    private int totalHealth = 0;
+    private int currentHealth = 0;
+
     // AI
     private Root AI;
     #endregion
@@ -69,6 +80,7 @@ public class Gunner : MonoBehaviour {
         if (player == null) {
             throw new System.Exception("Please confirm if the player exists");
         }
+        distancePerWalk = 2 * walkDelay * WalkSpeed;
         groundFilter.SetLayerMask(LayerMask.GetMask(ConstantVar.GroundLayerName));
         gunnerColl = GetComponent<BoxCollider2D>();
         rigid = GetComponent<Rigidbody2D>();
@@ -80,8 +92,8 @@ public class Gunner : MonoBehaviour {
         gunnerHealth.onHurt += GunnerOnHurt;
         gunnerHealth.onDead += GunnerOnDead;
 
-/*        shieldHealth.onHurt += ShieldOnHurt;
-        shieldHealth.onDead += ShieldOnDead;*/
+        shieldHealth.onHurt += ShieldOnHurt;
+        shieldHealth.onDead += ShieldOnDead;
     }
 
     private void OnEnable() {
@@ -104,7 +116,7 @@ public class Gunner : MonoBehaviour {
                                 ),
                             FakeAI.Root().OpenBranch(
                                 FakeAI.WaitForAnimatorState(animator, "idel"),
-                                FakeAI.Trigger(animator, "lightning_attack", true), 
+                                FakeAI.Trigger(animator, "lightning_attack", true),
                                 FakeAI.Wait(lightningDelay),
                                 FakeAI.Call(MakeLightning, DestroyLightning),
                                 FakeAI.Wait(lightningTime),
@@ -133,6 +145,7 @@ public class Gunner : MonoBehaviour {
                         )
                     ),
                     FakeAI.Trigger(animator, "disabled", true),
+                    FakeAI.Trigger(shieldAnimator, "Defeat", true),
                     FakeAI.Wait(shieldFadeDelay),
                     FakeAI.Call(ShieldOnDead),
                     FakeAI.Wait(disabledTime),
@@ -145,12 +158,20 @@ public class Gunner : MonoBehaviour {
                 )
             ),
             FakeAI.Trigger(animator, "death", true),
+            FakeAI.Trigger(healthAnimator, "Defeat", true),
             FakeAI.Wait(explodeDelay),
             FakeAI.Call(AfterExplode),
             FakeAI.Wait(deadDelay),
             FakeAI.Call(AfterDead),
             FakeAI.Terminate()
         );
+
+        foreach (var round in rounds) {
+            totalHealth += round.bossHP;
+        }
+        currentHealth = totalHealth;
+        healthSlider.maxValue = totalHealth;
+        healthSlider.value = totalHealth;
     }
 
     private void Update() {
@@ -166,16 +187,23 @@ public class Gunner : MonoBehaviour {
 
     #region 受伤相关
     private void GunnerOnHurt(DamageType damageType, string resetPos, int damageNum) {
-
+        currentHealth -= damageNum;
+        healthSlider.value = currentHealth;
     }
 
-    private void GunnerOnDead(string resetPos) {
+    private void GunnerOnDead(string resetPos, int damageNum) {
+        currentHealth = currentHealth - damageNum - gunnerHealth.Health;
+        healthSlider.value = currentHealth;
         shieldHealth.gameObject.SetActive(false);
         gunnerHealth.Disable();
     }
 
     private void ShieldOnHurt(DamageType damageType, string resetPos, int damageNum) {
-        // todo
+        shieldSlider.value -= damageNum;
+    }
+
+    private void ShieldOnDead(string resetPos, int damageNum) {
+        shieldSlider.value -= damageNum;
     }
 
     private void ShieldOnDead() {
@@ -190,6 +218,7 @@ public class Gunner : MonoBehaviour {
         shieldHealth.gameObject.SetActive(true);
         gunnerHealth.Disable();
         shieldHealth.ResetHealth();
+        shieldSlider.value = shieldHealth.Health;
     }
 
     private bool IsAlive() {
@@ -210,6 +239,10 @@ public class Gunner : MonoBehaviour {
         gunnerHealth.Disable();
         shieldHealth.Enable();
         shieldHealth.gameObject.SetActive(true);
+
+        shieldSlider.maxValue = rounds[round].shieldHP;
+        shieldSlider.value = rounds[round].shieldHP;
+
         round++;
     }
 
@@ -293,8 +326,15 @@ public class Gunner : MonoBehaviour {
         RaycastHit2D down = Physics2D.Raycast(checkPath.position, Vector2.down, 1f, 1 << ConstantVar.groundLayer);
         // 其次检测面前是否有障碍物
         // 计算物体坐标和碰撞体之间的差值
-        float forwardDistance = Mathf.Abs(gunnerColl.bounds.center.x + transform.right.x * gunnerColl.bounds.extents.x - transform.position.x);
-        RaycastHit2D forward = Physics2D.BoxCast(gunnerColl.bounds.center, 2 * gunnerColl.bounds.extents, 0, -transform.right, forwardDistance, 1 << ConstantVar.groundLayer);
+        float forwardDistance;
+        if (transform.right.x * transform.position.x <= transform.right.x * gunnerColl.bounds.center.x) {
+            float diff = -transform.right.x * (transform.position.x - gunnerColl.bounds.center.x - gunnerColl.bounds.extents.x);
+            forwardDistance = -transform.right.x * (transform.position.x - transform.right.x * diff - (gunnerColl.bounds.center.x - transform.right.x * gunnerColl.bounds.extents.x));
+        } else {
+            forwardDistance = 0;
+        }
+
+        RaycastHit2D forward = Physics2D.BoxCast(gunnerColl.bounds.center, 2 * gunnerColl.bounds.extents, 0, -transform.right, forwardDistance + distancePerWalk, 1 << ConstantVar.groundLayer);
         return down && !forward;
     }
 }

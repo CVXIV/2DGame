@@ -5192,7 +5192,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 2
-  endPos: {x: -18.09, y: -19.93}
+  endPos: {x: 38.74, y: -21.44}
 --- !u!1001 &6254818706589278354
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5204,6 +5204,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PressurePad
+      objectReference: {fileID: 0}
+    - target: {fileID: 3199287790991357896, guid: ef9ae7cb2bbe17647a0a9464d5a8006d,
+        type: 3}
+      propertyPath: m_Layer
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 3199287790991357898, guid: ef9ae7cb2bbe17647a0a9464d5a8006d,
         type: 3}
@@ -5217,7 +5222,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3199287790991357900, guid: ef9ae7cb2bbe17647a0a9464d5a8006d,
         type: 3}
+      propertyPath: targets.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3199287790991357900, guid: ef9ae7cb2bbe17647a0a9464d5a8006d,
+        type: 3}
       propertyPath: target
+      value: 
+      objectReference: {fileID: 2948494762359009837}
+    - target: {fileID: 3199287790991357900, guid: ef9ae7cb2bbe17647a0a9464d5a8006d,
+        type: 3}
+      propertyPath: targets.Array.data[0]
       value: 
       objectReference: {fileID: 2948494762359009837}
     - target: {fileID: 3199287790991357901, guid: ef9ae7cb2bbe17647a0a9464d5a8006d,

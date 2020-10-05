@@ -17,7 +17,7 @@ public class Destructible : MonoBehaviour {
         beDamage.onDead += OnDead;
     }
 
-    private void OnDead(string resetPos) {
+    private void OnDead(string resetPos, int damageNum) {
         Destroy(beforeDestruct);
         afterDestruct.SetActive(true);
     }

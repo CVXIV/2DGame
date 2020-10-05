@@ -12,7 +12,7 @@ public class BeDamage : MonoBehaviour {
     }
 
     public Action<DamageType, string, int> onHurt;
-    public Action<string> onDead;
+    public Action<string, int> onDead;
     private bool isEnable = true;
 
     protected virtual void Awake() {
@@ -31,7 +31,7 @@ public class BeDamage : MonoBehaviour {
         if (isEnable && health > 0) {
             health -= value;
             if (health <= 0) {
-                onDead?.Invoke(resetPos);
+                onDead?.Invoke(resetPos, value);
             } else {
                 onHurt?.Invoke(damageType, resetPos, value);
             }

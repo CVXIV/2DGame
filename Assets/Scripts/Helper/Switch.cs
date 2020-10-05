@@ -5,7 +5,6 @@ using UnityEngine.Events;
 
 
 public class Switch : SwitchBase {
-    public UnityEvent<Vector3, float> unityEvent;
     private GameObject point_light;
 
 
@@ -18,9 +17,6 @@ public class Switch : SwitchBase {
     private void OnTriggerEnter2D(Collider2D collision) {
         if (collision.CompareTag(ConstantVar.TriggerTag)) {
             React();
-            if (status == SwitchStatus.OPEN) {
-                unityEvent?.Invoke(transform.position, 1);
-            }
         }
     }
 

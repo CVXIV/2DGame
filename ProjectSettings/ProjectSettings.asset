@@ -734,10 +734,12 @@ PlayerSettings:
     Build: 0
     Collab: 0
     ErrorHub: 0
+    Game Performance: 0
     Game_Performance: 0
     Hub: 0
     Purchasing: 0
     UNet: 1
+    Unity Ads: 0
     Unity_Ads: 0
   luminIcon:
     m_Name: 
@@ -751,10 +753,10 @@ PlayerSettings:
     m_VersionCode: 1
     m_VersionName: 
   apiCompatibilityLevel: 6
-  cloudProjectId: 
+  cloudProjectId: 2ffe252b-5d24-4b92-94bc-63ec732b3326
   framebufferDepthMemorylessMode: 0
-  projectName: Platformer-2D
-  organizationId: 
+  projectName: 2DGame
+  organizationId: cvxiv-new
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0

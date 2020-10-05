@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 494476812716645066}
   - component: {fileID: 494476812716645065}
   - component: {fileID: 494476812716645064}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: InfoSign
   m_TagString: Untagged
   m_Icon: {fileID: 0}

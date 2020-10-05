@@ -74,7 +74,7 @@ public class EnemyBase : MonoBehaviour {
         rigid.velocity = new Vector2(rigid.velocity.x, value);
     }
 
-    protected virtual void OnDead(string resPos) {
+    protected virtual void OnDead(string resPos, int damageNum) {
         status = EnemyStatus.DEATH;
         // 确保动画必定播放，如果放在PlayAnimation，可能导致状态被冲走
         animator.SetBool("is_dead", true);
