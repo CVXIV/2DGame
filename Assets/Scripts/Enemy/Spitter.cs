@@ -31,6 +31,6 @@ public class Spitter : EnemyBase {
         }
         GameObject newBullet = Instantiate(bullet);
         newBullet.transform.position = m_Collider.bounds.center + transform.right * m_Collider.bounds.extents.x;
-        newBullet.GetComponent<TraceBullet>().LockTarget(curTarget, isFlip, damage.resetPos);
+        newBullet.GetComponent<TraceBullet>().LockTarget(curTarget, isFlip);
     }
 }

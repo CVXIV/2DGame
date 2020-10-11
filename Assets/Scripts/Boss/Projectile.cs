@@ -61,10 +61,9 @@ public class Projectile : BulletBase {
         damage.Attack(collideInfo.target);
     }
 
-    public void LockTarget(Vector2 direction, string resetPos, float speed = 15f) {
+    public void LockTarget(Vector2 direction, float speed = 15f) {
         this.direction = direction;
         this.speed = speed;
         rigid.velocity = direction * speed;
-        damage.resetPos = resetPos;
     }
 }

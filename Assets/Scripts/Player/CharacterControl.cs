@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using CVXIV;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using static ConstantVar;
 
@@ -14,7 +16,6 @@ public class CharacterControl : MonoBehaviour {
     private bool isPush;
     private BoxCollider2D box;
     private Rigidbody2D rigid;
-    private SpriteRenderer sprite;
     private Animator animator;
     public float speedX = 7;
     public float speedY = 11;
@@ -25,7 +26,6 @@ public class CharacterControl : MonoBehaviour {
     private PassPlatform passPlatform;
     private PlayerBeDamage beDamage;
     private Damage damage;
-    private string resetPos;
     private readonly float attackGap = 0.8f;
     public bool IsHasWeapon {
         get;
@@ -42,6 +42,9 @@ public class CharacterControl : MonoBehaviour {
     // 推动物体
     private ContactFilter2D contactFilter2D;
     private readonly List<Collider2D> contacts = new List<Collider2D>();
+    // 重生点
+    private CheckPoint checkPoint;
+    private Vector3 initPos;
     #endregion
 
     #region 回调
@@ -52,13 +55,14 @@ public class CharacterControl : MonoBehaviour {
         attackCheck = attackRange.GetComponent<AttackRange>();
         box = GetComponent<BoxCollider2D>();
         rigid = GetComponent<Rigidbody2D>();
-        sprite = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         //IsHasWeapon = DataManager.Instance.GetData(ConstantVar.weapon_key) is Data1Value<bool> data && data.Value1;
         isFlip = transform.rotation.y == 1;
         IsHasWeapon = true;
 
         contactFilter2D.SetLayerMask(1 << ConstantVar.groundLayer);
+
+        initPos = transform.position;
     }
 
     private void Start() {
@@ -149,8 +153,7 @@ public class CharacterControl : MonoBehaviour {
     }
 
 
-    private void OnHurt(DamageType damageType, string resetPos, int damageNum) {
-        this.resetPos = resetPos;
+    private void OnHurt(DamageType damageType, int damageNum) {
         switch (damageType) {
             case DamageType.Normal:
                 animator.SetTrigger("on_hurt");
@@ -158,14 +161,16 @@ public class CharacterControl : MonoBehaviour {
                 break;
             case DamageType.Dead:
                 // 播放死亡动画，重置位置
-                PrepareDead();
-                TipMessagePanel.Instance.Show(null, TipStyle.FullScreen);
-                Invoke(nameof(ResetPos), 1);
+                StartCoroutine(DieRespawnCoroutine(false, true));
                 break;
         }
 
     }
 
+    /// <summary>
+    /// 使得角色无敌一段时间
+    /// </summary>
+    /// <param name="time"></param>
     private void SetInvincible(float time) {
         animator.SetBool("is_invincible", true);
         beDamage.Disable();
@@ -181,43 +186,58 @@ public class CharacterControl : MonoBehaviour {
     }
 
     private void PrepareDead() {
-        beDamage.Disable();
-        animator.SetTrigger("dead_trigger");
-        animator.SetBool("is_dead", true);
         NotMove();
+        beDamage.Disable();
+        animator.SetBool("is_dead", true);
     }
 
-    private void AfterDead() {
-        TipMessagePanel.Instance.Show(null, TipStyle.GameOver);
-        Invoke(nameof(ResetFromDead), 3);
-    }
-
-    private void OnDead(string resetPos, int damageNum) {
-        this.resetPos = resetPos;
-        PrepareDead();
-        Invoke(nameof(AfterDead), 1);
+    private void OnDead(int damageNum) {
+        StartCoroutine(DieRespawnCoroutine(true, false));
     }
 
     /// <summary>
     /// 角色受到重置位置攻击时调用
     /// </summary>
-    private void ResetPos() {
-        SetSpeedX(0);
-        SetSpeedY(0);
-        animator.SetBool("is_dead", false);
+
+    private IEnumerator DieRespawnCoroutine(bool resetHealth, bool useCheckPoint) {
+        PrepareDead();
+        yield return new WaitForSeconds(1.0f); // 等待1秒
+        yield return StartCoroutine(ScreenFader.FadeSceneIn(useCheckPoint ? ScreenFader.FadeType.Black : ScreenFader.FadeType.GameOver));
+        // 如果是角色血量耗尽，则进入游戏结束界面且多等待2秒以展示该界面
+        if (!useCheckPoint) {
+            yield return new WaitForSeconds(2f);
+        }
+        Respawn(resetHealth, useCheckPoint);
+        yield return new WaitForEndOfFrame();
+        yield return StartCoroutine(ScreenFader.FadeSceneOut());
         CanMove();
-        transform.position = GameObject.Find(resetPos).transform.position;
         SetInvincible(2);
     }
 
     /// <summary>
-    /// 角色死亡后重新开始游戏
+    /// 重置角色位置
     /// </summary>
-    private void ResetFromDead() {
-        TipMessagePanel.Instance.Hide(TipStyle.GameOver);
-        beDamage.Reset();
-        ResetPos();
+    /// <param name="resetHealth"></param>
+    /// <param name="useCheckpoint"></param>
+    private void Respawn(bool resetHealth, bool useCheckpoint) {
+        if (resetHealth) {
+            beDamage.ResetHealth();
+        }
+        if (useCheckpoint && checkPoint != null) {
+            GameObjectTeleporter.Teleport(gameObject, checkPoint.transform.position);
+        } else {
+            GameObjectTeleporter.Teleport(gameObject, initPos);
+        }
+        SetSpeedX(0);
+        SetSpeedY(0);
+        animator.SetBool("is_dead", false);
     }
+
+
+    public void CheckPoint(CheckPoint checkPoint) {
+        this.checkPoint = checkPoint;
+    }
+
     #endregion
 
     #region 初始化

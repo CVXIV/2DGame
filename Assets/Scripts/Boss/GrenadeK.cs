@@ -22,8 +22,7 @@ public class GrenadeK : BulletBase {
         }
     }
 
-    public void LockTarget(Vector2 direction, string resetPos, float speed = 15f) {
-        rigid.velocity = direction * speed;
-        damage.resetPos = resetPos;
+    public void LockTarget(Vector2 direction, float speed = 15f) {
+        rigid.velocity = direction * speed;    
     }
 }

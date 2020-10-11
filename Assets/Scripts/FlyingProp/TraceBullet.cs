@@ -53,8 +53,7 @@ public class TraceBullet : BulletBase {
         }
     }
 
-    public void LockTarget(Transform target, bool isFlip, string resetPos) {
-        damage.resetPos = resetPos;
+    public void LockTarget(Transform target, bool isFlip) {
         this.target = target;
         transform.rotation = Quaternion.Euler(0, isFlip ? 180 : 0, 0);
     }

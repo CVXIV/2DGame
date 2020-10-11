@@ -15,7 +15,7 @@ public class PlayerBeDamage : BeDamage {
         GamePanel.Instance.InitHP(health, ConstantVar.MAXHP);
     }
 
-    public void Reset() {
+    public override void ResetHealth() {
         health = ConstantVar.MAXHP;
         DataManager.Instance.SaveData(ConstantVar.player_hp, new Data1Value<int> {
             Value1 = health
@@ -24,8 +24,8 @@ public class PlayerBeDamage : BeDamage {
         Enable();
     }
 
-    public override void TakeDamage(int value, DamageType damageType, string resetPos) {
-        base.TakeDamage(value, damageType, resetPos);
+    public override void TakeDamage(int value, DamageType damageType) {
+        base.TakeDamage(value, damageType);
         DataManager.Instance.SaveData(ConstantVar.player_hp, new Data1Value<int> {
             Value1 = health
         });

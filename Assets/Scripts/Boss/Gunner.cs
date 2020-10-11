@@ -186,23 +186,23 @@ public class Gunner : MonoBehaviour {
     }
 
     #region 受伤相关
-    private void GunnerOnHurt(DamageType damageType, string resetPos, int damageNum) {
+    private void GunnerOnHurt(DamageType damageType, int damageNum) {
         currentHealth -= damageNum;
         healthSlider.value = currentHealth;
     }
 
-    private void GunnerOnDead(string resetPos, int damageNum) {
+    private void GunnerOnDead(int damageNum) {
         currentHealth = currentHealth - damageNum - gunnerHealth.Health;
         healthSlider.value = currentHealth;
         shieldHealth.gameObject.SetActive(false);
         gunnerHealth.Disable();
     }
 
-    private void ShieldOnHurt(DamageType damageType, string resetPos, int damageNum) {
+    private void ShieldOnHurt(DamageType damageType, int damageNum) {
         shieldSlider.value -= damageNum;
     }
 
-    private void ShieldOnDead(string resetPos, int damageNum) {
+    private void ShieldOnDead(int damageNum) {
         shieldSlider.value -= damageNum;
     }
 
@@ -262,14 +262,14 @@ public class Gunner : MonoBehaviour {
         Projectile newBullet = Instantiate(projectile);
         newBullet.transform.position = beamLaser.transform.position;
         var direction = -beamLaser.transform.right;
-        newBullet.LockTarget(direction, damage.resetPos, projectileSpeed);
+        newBullet.LockTarget(direction, projectileSpeed);
     }
 
     private void MakeGrenade() {
         GrenadeK newBullet = Instantiate(grenade);
         newBullet.transform.position = grenadePos.position;
         // 这里左边是图片的正方向
-        newBullet.LockTarget(-transform.right, damage.resetPos);
+        newBullet.LockTarget(-transform.right);
     }
 
     private void MakeLightning() {

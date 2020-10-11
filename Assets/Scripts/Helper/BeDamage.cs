@@ -11,8 +11,8 @@ public class BeDamage : MonoBehaviour {
         }
     }
 
-    public Action<DamageType, string, int> onHurt;
-    public Action<string, int> onDead;
+    public Action<DamageType, int> onHurt;
+    public Action<int> onDead;
     private bool isEnable = true;
 
     protected virtual void Awake() {
@@ -27,13 +27,13 @@ public class BeDamage : MonoBehaviour {
         isEnable = false;
     }
 
-    public virtual void TakeDamage(int value, DamageType damageType, string resetPos) {
+    public virtual void TakeDamage(int value, DamageType damageType) {
         if (isEnable && health > 0) {
             health -= value;
             if (health <= 0) {
-                onDead?.Invoke(resetPos, value);
+                onDead?.Invoke(value);
             } else {
-                onHurt?.Invoke(damageType, resetPos, value);
+                onHurt?.Invoke(damageType, value);
             }
         }
     }

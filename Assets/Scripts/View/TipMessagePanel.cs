@@ -13,7 +13,6 @@ public class TipMessagePanel : Singleton<TipMessagePanel> {
     #region 字段
     private GameObject style1;
     private GameObject style2;
-    private GameObject style3;
     private Text content;
     #endregion
 
@@ -24,9 +23,6 @@ public class TipMessagePanel : Singleton<TipMessagePanel> {
 
         style2 = transform.Find("Style2").gameObject;
         style2.SetActive(false);
-
-        style3 = transform.Find("Style3").gameObject;
-        style3.SetActive(false);
     }
 
     public void Show(string text, TipStyle tipStyle) {
@@ -38,9 +34,6 @@ public class TipMessagePanel : Singleton<TipMessagePanel> {
             case TipStyle.FullScreen:
                 style2.SetActive(true);
                 Invoke(nameof(HideFullScreen), 1.5f);
-                break;
-            case TipStyle.GameOver:
-                style3.SetActive(true);
                 break;
         }
 
@@ -57,9 +50,6 @@ public class TipMessagePanel : Singleton<TipMessagePanel> {
                 break;
             case TipStyle.FullScreen:
                 style2.SetActive(false);
-                break;
-            case TipStyle.GameOver:
-                style3.SetActive(false);
                 break;
         }
     }

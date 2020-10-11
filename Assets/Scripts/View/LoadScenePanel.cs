@@ -3,27 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LoadScenePanel : Singleton<LoadScenePanel> {
+public class LoadScenePanel : MonoBehaviour {
     #region
     private Slider progress;
     private AsyncOperation info;
     #endregion
 
-    protected override void Awake() {
-        base.Awake();
+    private void Awake() {
         progress = GetComponentInChildren<Slider>();
-        DontDestroyOnLoad(gameObject);
     }
 
     private void Update() {
-        if(info != null) {
+        if (info != null) {
             UpdateProgress(info.progress);
         }
     }
 
     private void UpdateProgress(float value) {
         progress.value = value;
-        if(value >= 1) {
+        if (value >= 1) {
             Hide();
         }
     }
@@ -35,6 +33,7 @@ public class LoadScenePanel : Singleton<LoadScenePanel> {
 
     public void Hide() {
         this.gameObject.SetActive(false);
+        progress.value = 0;
         this.info = null;
     }
 }

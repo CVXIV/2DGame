@@ -11,6 +11,7 @@ public class ConstantVar {
     public const string GroundLayerName = "ground";
     public const string PlayLayer = "Player";
     public const string EnemyLayer = "Enemy";
+    public const string ThirdEnemyLayer = "ThirdEnemy";
     public const string ListenLayer = "ListenRange"; 
     public const string AttackLayer = "AttackRange";
     public const string SkyGroundTag = "SkyGround";
@@ -20,6 +21,9 @@ public class ConstantVar {
     public const int sceneStart = 0;
     public const int sceneLeven1 = 1;
     public const int sceneLeven2 = 2;
+    public const string sceneStartName = "level0";
+    public const string sceneLeven1Name = "level1";
+    public const string sceneLeven2Name = "level2";
 
     // tag
     public const string PlayTag = "Player";

@@ -5074,7 +5074,6 @@ GameObject:
   - component: {fileID: 2760546098093493039}
   - component: {fileID: 2760546098093493038}
   - component: {fileID: 2760546098093493037}
-  - component: {fileID: 2760546098093493036}
   m_Layer: 20
   m_Name: MovingPlatform
   m_TagString: SkyGround
@@ -5178,17 +5177,3 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &2760546098093493036
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2760546098093493027}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80cdf811d05f61e4e9b91b8561b1286e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 2
-  endPos: {x: -0.96, y: -12.35951}
