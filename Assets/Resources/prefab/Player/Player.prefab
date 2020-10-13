@@ -116,6 +116,7 @@ GameObject:
   - component: {fileID: 1422848699}
   - component: {fileID: 6366198993404638541}
   - component: {fileID: 840435036}
+  - component: {fileID: 1686991974}
   m_Layer: 13
   m_Name: Player
   m_TagString: Player
@@ -318,3 +319,44 @@ MonoBehaviour:
   bulletPos: {fileID: 1644654422}
   bullet: {fileID: 3653323550900044475, guid: 35bac2d37d6f69848be0e3a5619eba06, type: 3}
   holdingGunDuration: 1.5
+--- !u!114 &1686991974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5351437634923455329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7815e509bacad344a91b7926441017c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputType: 0
+  Pause:
+    key: 27
+    controllerButton: 8
+    enabled: 1
+  Interact:
+    key: 101
+    controllerButton: 4
+    enabled: 1
+  NormalAttack:
+    key: 106
+    controllerButton: 3
+    enabled: 1
+  RangedAttack:
+    key: 107
+    controllerButton: 2
+    enabled: 1
+  Jump:
+    key: 32
+    controllerButton: 1
+    enabled: 1
+  Horizontal:
+    positive: 100
+    negative: 97
+    controllerAxis: 1
+  Vertical:
+    positive: 119
+    negative: 115
+    controllerAxis: 2

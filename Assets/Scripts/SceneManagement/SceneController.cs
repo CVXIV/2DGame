@@ -9,8 +9,15 @@ namespace CVXIV {
 
         public SceneTransitionDestination initialSceneTransitionDestination;
 
-        protected Scene currentZoneScene;
-        protected string zoneRestartDestinationName;
+        protected PlayerController playerController;
+        protected PlayerController PlayerController {
+            get {
+                if(playerController == null) {
+                    playerController = FindObjectOfType<PlayerController>();
+                }
+                return playerController;
+            }
+        }
         protected bool transitioning;
 
         /// <summary>
@@ -25,7 +32,7 @@ namespace CVXIV {
         protected override void Awake() {
             base.Awake();
             DontDestroyOnLoad(gameObject);
-
+            playerController = FindObjectOfType<PlayerController>();
 /*            if (initialSceneTransitionDestination != null) {
                 SetEnteringGameObjectLocation(initialSceneTransitionDestination);
                 ScreenFader.SetAlpha(1f);
@@ -37,49 +44,43 @@ namespace CVXIV {
             }*/
         }
 
-/*        public static void RestartZone(bool resetHealth = true) {
+        public static void RestartZone(bool resetHealth = true) {
             if (resetHealth) {
-                //PlayerCharacter.PlayerInstance.damageable.SetHealth(PlayerCharacter.PlayerInstance.damageable.startingHealth);
+                Instance.PlayerController.GetComponent<PlayerBeDamage>().ResetHealth();
             }
-
-            Instance.StartCoroutine(Instance.Transition(Instance.currentZoneScene.name, true, Instance.zoneRestartDestinationName, TransitionPoint.TransitionType.DifferentZone));
+            Instance.StartCoroutine(Instance.Transition(SceneManager.GetActiveScene().name, true, null));
         }
 
         public static void RestartZoneWithDelay(float delay, bool resetHealth = true) {
             Instance.StartCoroutine(CallWithDelay(delay, RestartZone, resetHealth));
-        }*/
+        }
 
         public static void TransitionToScene(TransitionPoint transitionPoint) {
-            Instance.StartCoroutine(Instance.Transition(transitionPoint.newSceneName, transitionPoint.resetInputValuesOnTransition, transitionPoint.transitionDestinationName, transitionPoint.transitionType));
+            Instance.StartCoroutine(Instance.Transition(transitionPoint.newSceneName, transitionPoint.resetInputValuesOnTransition, transitionPoint.transitionDestinationName));
         }
 
-        public static void PureLoadScene(string sceneName, string destinationName) {
-            Instance.StartCoroutine(Instance.Transition(sceneName, true, destinationName));
+        public static void PureLoadScene(string sceneName) {
+            Instance.StartCoroutine(Instance.Transition(sceneName, true, null));
         }
 
-        protected IEnumerator Transition(string newSceneName, bool resetInputValues, string destinationName, TransitionPoint.TransitionType transitionType = TransitionPoint.TransitionType.DifferentZone) {
+        protected IEnumerator Transition(string newSceneName, bool resetInputValues, string destinationName) {
             transitioning = true;
             //PersistentDataManager.SaveAllData();
-
-/*            if (m_PlayerInput == null)
-                m_PlayerInput = FindObjectOfType<PlayerInput>();
-            m_PlayerInput.ReleaseControl(resetInputValues);*/
-
+            // 加载场景前取消控制
+            PlayerInput.Instance.ReleaseControl(resetInputValues);
             yield return StartCoroutine(ScreenFader.FadeSceneIn(ScreenFader.FadeType.Loading));
             //PersistentDataManager.ClearPersisters();
-            // 这里不能使用协程，因为要等待场景加载完毕才能继续设置人物的位置信息
-            yield return ScreenFader.LoadScene(newSceneName);
-            /*            m_PlayerInput = FindObjectOfType<PlayerInput>();
-                        m_PlayerInput.ReleaseControl(resetInputValues);
-                        PersistentDataManager.LoadAllData();*/
-            SceneTransitionDestination entrance = GetDestinationFromName(destinationName);
+            // 等待场景加载完毕才能继续设置人物的位置信息
+            yield return StartCoroutine(ScreenFader.LoadScene(newSceneName));
+            // 加载场景后取消控制
+            PlayerInput.Instance.ReleaseControl(resetInputValues);
+            //PersistentDataManager.LoadAllData();
+            // 如果没有传递目的地索引，则寻找默认索引
+            SceneTransitionDestination entrance = destinationName == null ? RestartLevelPos.Instance.restartPos : GetDestinationFromName(destinationName);
             SetEnteringGameObjectLocation(entrance);
-            SetupNewScene(transitionType, entrance);
-            if (entrance != null) {
-                entrance.OnReachDestination.Invoke();
-            }
+
             yield return StartCoroutine(ScreenFader.FadeSceneOut());
-            // m_PlayerInput.GainControl();
+            PlayerInput.Instance.GainControl();
             transitioning = false;
         }
 
@@ -107,28 +108,13 @@ namespace CVXIV {
             Transform enteringTransform = GameObject.Find("Player").transform;
             enteringTransform.position = entranceLocation.position;
             enteringTransform.rotation = entranceLocation.rotation;
-        }
 
-        /// <summary>
-        /// 更新当前场景信息
-        /// </summary>
-        /// <param name="transitionType"></param>
-        /// <param name="entrance"></param>
-        protected void SetupNewScene(TransitionPoint.TransitionType transitionType, SceneTransitionDestination entrance) {
-            if (entrance == null) {
-                Debug.LogWarning("Restart information has not been set.");
-                return;
-            }
-
-            if (transitionType == TransitionPoint.TransitionType.DifferentZone) {
-                currentZoneScene = entrance.gameObject.scene;
-                zoneRestartDestinationName = entrance.destinationName;
-            }
+            entrance.OnReachDestination.Invoke();
         }
 
 
         private static IEnumerator CallWithDelay<T>(float delay, Action<T> call, T parameter) {
-            yield return new WaitForSeconds(delay);
+            yield return Yields.GetWaitForSeconds(delay);
             call(parameter);
         }
 

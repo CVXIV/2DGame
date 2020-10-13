@@ -19,8 +19,8 @@ public class PressurePad : SwitchBase {
 
     private void OnTriggerExit2D(Collider2D collision) {
         if (collision.CompareTag(ConstantVar.TriggerTag) || collision.CompareTag(ConstantVar.PlayTag)) {
-            if (status == SwitchStatus.OPEN) {
-                currentPreObj.Remove(collision.gameObject);
+            currentPreObj.Remove(collision.gameObject);
+            if (status == SwitchStatus.OPEN && currentPreObj.Count == 0) {
                 React();
             }
         }

@@ -35,7 +35,7 @@ namespace CVXIV {
                 if (playerInput == null) {
                     playerInput = FindObjectOfType<PlayerInput>();
                 }
-                playerInput.ReleaseControl();
+                playerInput.ReleaseControl(resetInputValues);
             }
 
             if (fade) {

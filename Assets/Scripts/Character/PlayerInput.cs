@@ -23,22 +23,6 @@ namespace CVXIV {
         protected bool debugMenuIsOpen = false;
 
 
-/*        private void OnEnable() {
-            if (Instance == null) {
-                Instance = this;
-            } else if (s_Instance != this) {
-                throw new UnityException("There cannot be more than one PlayerInput script.  The instances are " + s_Instance.name + " and " + name + ".");
-            }
-
-            //PersistentDataManager.RegisterPersister(this);
-        }
-
-        private void OnDisable() {
-            //PersistentDataManager.UnregisterPersister(this);
-
-            s_Instance = null;
-        }*/
-
         protected override void GetInputs(bool fixedUpdateHappened) {
             Pause.Get(fixedUpdateHappened, inputType);
             Interact.Get(fixedUpdateHappened, inputType);

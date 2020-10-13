@@ -7,12 +7,11 @@ public class MenuPanel : BasePanel {
 
     #region 字段
     public OptionPanel optionPanel;
-    private readonly string defaultSceneDestinationName = "level1_2";
     #endregion
 
     #region 点击事件
     public void OnStartClick() {
-        SceneController.PureLoadScene(ConstantVar.sceneLeven1Name, defaultSceneDestinationName);
+        SceneController.PureLoadScene(ConstantVar.sceneLeven1Name);
     }
 
     public void OnSetClick() {

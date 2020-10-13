@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MEC;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class MovePlatform : MonoBehaviour, ISwitchAble {
@@ -25,7 +26,6 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
 
     public float speed = 2f;
     private Rigidbody2D rigid;
-    private readonly List<Collider2D> contacts = new List<Collider2D>();
     private ContactFilter2D contactFilter2D;
     private BoxCollider2D box;
     protected virtual void Awake() {
@@ -34,6 +34,7 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
         box = GetComponent<BoxCollider2D>();
         Init();
     }
+
 
     private void Init() {
         localNodes[0] = Vector3.zero;
@@ -49,12 +50,10 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
     }
 
     private void TransportObj() {
-        int count = Physics2D.OverlapCollider(box, contactFilter2D, contacts);
-        // int count = rigid.GetContacts(contactFilter2D, contacts);
-        for (int i = 0; i < count; ++i) {
-            // 只需要x分量的速度
+        RaycastHit2D[] hits = Physics2D.BoxCastAll(box.bounds.center, 2 * box.bounds.extents, 0, Vector2.up, 0.1f, contactFilter2D.layerMask);
+        foreach(var hit in hits) {
             float velocity_x = rigid.velocity.x;
-            contacts[i].attachedRigidbody.AddForce(new Vector2(contacts[i].attachedRigidbody.mass * velocity_x / Time.fixedDeltaTime, 0));
+            hit.collider.attachedRigidbody.AddForce(new Vector2(hit.collider.attachedRigidbody.mass * velocity_x / Time.fixedDeltaTime, 0));
         }
     }
 
@@ -63,7 +62,7 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
     /// </summary>
     IEnumerator AfterFixedUpdate() {
         TransportObj();
-        yield return new WaitForFixedUpdate();
+        yield return Yields._FixedUpdate;
     }
 
     protected virtual void FixedUpdate() {
@@ -124,7 +123,6 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
             }
         }
         rigid.velocity = currentSpeedVector;
-
         StartCoroutine(AfterFixedUpdate());
     }
 

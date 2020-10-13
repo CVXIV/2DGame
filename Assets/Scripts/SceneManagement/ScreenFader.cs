@@ -48,10 +48,10 @@ namespace CVXIV {
             canvasGroup.blocksRaycasts = false;
         }
 
-        public static AsyncOperation LoadScene(string sceneName) {
+        public static IEnumerator LoadScene(string sceneName) {
             Instance.info = SceneManager.LoadSceneAsync(sceneName);
             Instance.currentActivateCanvasGroup.GetComponent<LoadScenePanel>().Show(Instance.info);
-            return Instance.info;
+            yield return Instance.info;
         }
 
         public static IEnumerator FadeSceneIn(FadeType fadeType = FadeType.Black) {
@@ -68,7 +68,6 @@ namespace CVXIV {
             }
 
             Instance.currentActivateCanvasGroup.gameObject.SetActive(true);
-
             yield return Instance.StartCoroutine(Instance.Fade(1f, Instance.currentActivateCanvasGroup));
         }
 

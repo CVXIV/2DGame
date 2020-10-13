@@ -7,7 +7,7 @@ public class OptionPanel : BasePanel {
 
     #region 字段
     public GameObject defaultPanel;
-    public MenuPanel menuPanel;
+    public BasePanel menuPanel;
     public OptionAudioPanel optionAudioPanel;
     public OptionControlPanel optionControlPanel;
     #endregion

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CVXIV {
 
@@ -15,6 +16,8 @@ namespace CVXIV {
         private ContactFilter2D contactFilter2D;
         private PassPlatform passPlatform;
         private readonly List<Collider2D> contacts = new List<Collider2D>();
+
+        private bool isPause = false;
 
         public AttackRange normalAttackCheck;
         public float maxSpeedX = 7;
@@ -47,8 +50,8 @@ namespace CVXIV {
         protected readonly int hashPushing = Animator.StringToHash("Pushing");
         protected readonly int hashHoldingGun = Animator.StringToHash("withgun");
         protected readonly int hashNormalAttack = Animator.StringToHash("normalAttack");
-        protected readonly int hashOnHurt = Animator.StringToHash("onHurt"); 
-        protected readonly int hashInvincible = Animator.StringToHash("Invincible"); 
+        protected readonly int hashOnHurt = Animator.StringToHash("onHurt");
+        protected readonly int hashInvincible = Animator.StringToHash("Invincible");
         protected readonly int hashDead = Animator.StringToHash("Dead");
         // 重生点
         private CheckPoint checkPoint;
@@ -73,6 +76,38 @@ namespace CVXIV {
             animator.SetFloat(hashHorizontalSpeed, rigid.velocity.x);
             animator.SetFloat(hashVerticalSpeed, rigid.velocity.y);
             CheckGround();
+        }
+
+        private void Update() {
+            if (PlayerInput.Instance.Pause.Down) {
+                if (!isPause) {
+                    if (ScreenFader.IsFading) {
+                        return;
+                    }
+                    PlayerInput.Instance.ReleaseControl(false);
+                    PlayerInput.Instance.Pause.GainControl();
+                    isPause = true;
+                    Time.timeScale = 0;
+                    SceneManager.LoadSceneAsync(ConstantVar.PauseMenuName, LoadSceneMode.Additive);
+                } else {
+                    Unpause();
+                }
+            }
+        }
+
+        public void Unpause() {
+            if (Time.timeScale != 0) {
+                return;
+            }
+            StartCoroutine(UnpauseCoRoutine());
+        }
+
+        private IEnumerator UnpauseCoRoutine() {
+            yield return SceneManager.UnloadSceneAsync(ConstantVar.PauseMenuName);
+            Time.timeScale = 1;
+            yield return Yields._FixedUpdate;
+            PlayerInput.Instance.GainControl();
+            isPause = false;
         }
 
         private void CheckGround() {
@@ -301,14 +336,14 @@ namespace CVXIV {
         /// </summary>
         private IEnumerator DieRespawnCoroutine(bool resetHealth, bool useCheckPoint) {
             PrepareDead();
-            yield return new WaitForSeconds(1.0f); // 等待1秒
+            yield return Yields.GetWaitForSeconds(1f); // 等待1秒
             yield return StartCoroutine(ScreenFader.FadeSceneIn(useCheckPoint ? ScreenFader.FadeType.Black : ScreenFader.FadeType.GameOver));
             // 如果是角色血量耗尽，则进入游戏结束界面且多等待2秒以展示该界面
             if (!useCheckPoint) {
-                yield return new WaitForSeconds(2f);
+                yield return Yields.GetWaitForSeconds(2f);
             }
             Respawn(resetHealth, useCheckPoint);
-            yield return new WaitForEndOfFrame();
+            yield return Yields._endOfFrame;
             yield return StartCoroutine(ScreenFader.FadeSceneOut());
             PlayerInput.Instance.GainControl();
             SetInvincible(2);
@@ -324,6 +359,7 @@ namespace CVXIV {
                 beDamage.ResetHealth();
             }
             if (useCheckpoint && checkPoint != null) {
+                SetFacing(checkPoint.playerFacingRight);
                 GameObjectTeleporter.Teleport(gameObject, checkPoint.transform.position);
             } else {
                 GameObjectTeleporter.Teleport(gameObject, initPos);
@@ -335,6 +371,12 @@ namespace CVXIV {
         public void CheckPoint(CheckPoint checkPoint) {
             this.checkPoint = checkPoint;
         }
+
+        public void SetFacing(bool isRight) {
+            isFlip = !isRight;
+            transform.localScale = isFlip ? new Vector2(-1, 1) : new Vector2(1, 1);
+        }
+
         #endregion
     }
 }

@@ -4,12 +4,39 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace CVXIV {
-    public abstract class InputComponent<T> : Singleton<T> where T : InputComponent<T> {
+    public abstract class InputComponent<T> : MonoBehaviour where T: InputComponent<T> {
 
-        protected override void Awake() {
-            base.Awake();
-            DontDestroyOnLoad(gameObject);
+        protected static T _instance;
+
+        public static T Instance {
+            get {
+                return _instance;
+            }
         }
+
+        protected void Awake() {
+            if (_instance == null) {
+                _instance = this as T;
+            } else {
+                throw new UnityException("There cannot be more than one PlayerInput script.  The instances are " + _instance.name + " and " + name + ".");
+            }
+        }
+
+        /*        private void OnEnable() {
+            if (Instance == null) {
+                Instance = this;
+            } else if (s_Instance != this) {
+                throw new UnityException("There cannot be more than one PlayerInput script.  The instances are " + s_Instance.name + " and " + name + ".");
+            }
+
+            //PersistentDataManager.RegisterPersister(this);
+        }
+
+        private void OnDisable() {
+            //PersistentDataManager.UnregisterPersister(this);
+
+            s_Instance = null;
+        }*/
 
         public enum InputType {
             MouseAndKeyboard,
@@ -163,6 +190,7 @@ namespace CVXIV {
                     yield break;
                 }
 
+                // 如果按下了某个键，则自动发出Up信号
                 if (Down) {
                     Up = true;
                 }

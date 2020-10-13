@@ -26,7 +26,7 @@ namespace CVXIV {
         public TransitionPoint destinationTransform;
         [Tooltip("触发传送的时机")]
         public TransitionWhen transitionWhen;
-        [Tooltip("传送的过程中玩家会取消控制，是否将按键设置为默认")]
+        [Tooltip("传送的过程中玩家会取消控制，是否重置输入信号")]
         public bool resetInputValuesOnTransition = true;
 
 
@@ -71,9 +71,9 @@ namespace CVXIV {
             }
 
             if (transitionWhen == TransitionWhen.InteractPressed) {
-                /*                if (PlayerInput.Instance.Interact.Down) {
-                                    TransitionInternal();
-                                }*/
+                if (PlayerInput.Instance.Interact.Down) {
+                    TransitionInternal();
+                }
             }
         }
 

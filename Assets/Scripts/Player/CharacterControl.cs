@@ -201,14 +201,14 @@ public class CharacterControl : MonoBehaviour {
 
     private IEnumerator DieRespawnCoroutine(bool resetHealth, bool useCheckPoint) {
         PrepareDead();
-        yield return new WaitForSeconds(1.0f); // 等待1秒
+        yield return Yields.GetWaitForSeconds(1.0f); // 等待1秒
         yield return StartCoroutine(ScreenFader.FadeSceneIn(useCheckPoint ? ScreenFader.FadeType.Black : ScreenFader.FadeType.GameOver));
         // 如果是角色血量耗尽，则进入游戏结束界面且多等待2秒以展示该界面
         if (!useCheckPoint) {
-            yield return new WaitForSeconds(2f);
+            yield return Yields.GetWaitForSeconds(2.0f);
         }
         Respawn(resetHealth, useCheckPoint);
-        yield return new WaitForEndOfFrame();
+        yield return Yields._endOfFrame;
         yield return StartCoroutine(ScreenFader.FadeSceneOut());
         CanMove();
         SetInvincible(2);

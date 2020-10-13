@@ -24,6 +24,7 @@ public class ConstantVar {
     public const string sceneStartName = "level0";
     public const string sceneLeven1Name = "level1";
     public const string sceneLeven2Name = "level2";
+    public const string PauseMenuName = "PauseMenus";
 
     // tag
     public const string PlayTag = "Player";
