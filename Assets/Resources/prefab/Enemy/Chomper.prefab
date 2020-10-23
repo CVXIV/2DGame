@@ -169,7 +169,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 1
   damageType: 0
-  resetPos: Level4_Pos2
+  hittableLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  attackContactFilter:
+    useTriggers: 0
+    useLayerMask: 0
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
 --- !u!114 &1990024085271643102
 MonoBehaviour:
   m_ObjectHideFlags: 0

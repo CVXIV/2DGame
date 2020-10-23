@@ -16,7 +16,7 @@ namespace CVXIV {
         private ContactFilter2D contactFilter2D;
         private PassPlatform passPlatform;
         private readonly List<Collider2D> contacts = new List<Collider2D>();
-
+        private float xScale, yScale;
         private bool isPause = false;
 
         public AttackRange normalAttackCheck;
@@ -58,6 +58,8 @@ namespace CVXIV {
         private Vector3 initPos;
 
         private void Awake() {
+            xScale = Mathf.Abs(transform.localScale.x);
+            yScale = Mathf.Abs(transform.localScale.y);
             InitBeDamage();
             damage = GetComponent<Damage>();
             box = GetComponent<BoxCollider2D>();
@@ -66,7 +68,7 @@ namespace CVXIV {
             SceneLinkedSMB<PlayerController>.Initialise(animator, this);
             contactFilter2D.SetLayerMask(1 << ConstantVar.groundLayer);
 
-            isFlip = transform.localScale.x == -1;
+            isFlip = transform.localScale.x == -xScale;
             currentVelocity = rigid.velocity;
             initPos = transform.position;
         }
@@ -161,7 +163,9 @@ namespace CVXIV {
 
         public void JumpingUpdateJump() {
             timeY += Time.deltaTime;
-            if (PlayerInput.Instance.Jump.Held && timeY < 0.2f) {
+            if (PlayerInput.Instance.Jump.Up) {
+                timeY = 0.22f;
+            } else if (PlayerInput.Instance.Jump.Held && timeY < 0.2f) {
                 currentVelocity.y = maxSpeedY;
                 isOnGround = false;
             }
@@ -171,10 +175,10 @@ namespace CVXIV {
             bool left = PlayerInput.Instance.Horizontal.Value < 0;
             bool right = PlayerInput.Instance.Horizontal.Value > 0;
             if (left) {
-                transform.localScale = new Vector2(-1, 1);
+                transform.localScale = new Vector2(-xScale, yScale);
                 isFlip = true;
             } else if (right) {
-                transform.localScale = new Vector2(1, 1);
+                transform.localScale = new Vector2(xScale, yScale);
                 isFlip = false;
             }
         }
@@ -374,7 +378,11 @@ namespace CVXIV {
 
         public void SetFacing(bool isRight) {
             isFlip = !isRight;
-            transform.localScale = isFlip ? new Vector2(-1, 1) : new Vector2(1, 1);
+            transform.localScale = isFlip ? new Vector2(-xScale, yScale) : new Vector2(xScale, yScale);
+        }
+
+        public void SetKinematic(bool isKinematic) {
+            rigid.bodyType = isKinematic ? RigidbodyType2D.Kinematic : RigidbodyType2D.Dynamic;
         }
 
         #endregion
