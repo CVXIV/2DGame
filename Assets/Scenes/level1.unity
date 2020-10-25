@@ -5472,6 +5472,11 @@ PrefabInstance:
       propertyPath: content
       value: "\u5F80\u4E0B\u8DF3\u8FDB\u5165\u4E0B\u4E00\u5173"
       objectReference: {fileID: 0}
+    - target: {fileID: 494476812716645065, guid: f74b9c320c4d8904487aeb97ab4ca226,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 494476812716645067, guid: f74b9c320c4d8904487aeb97ab4ca226,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -28882,6 +28887,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: TipMessagePanel
       objectReference: {fileID: 0}
+    - target: {fileID: 7588997455727841571, guid: a3b08ecf4bbbb054e80f2c89a6df71ec,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7588997456238178530, guid: a3b08ecf4bbbb054e80f2c89a6df71ec,
         type: 3}
       propertyPath: m_IsActive
@@ -37702,7 +37712,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1639880939
 Transform:
   m_ObjectHideFlags: 0
@@ -46109,6 +46119,11 @@ PrefabInstance:
         type: 3}
       propertyPath: content
       value: "\u963F\u4E09\u5927\u82CF\u6253\u963F\u65AF\u987F\u6492\u5927\u82CF\u6253\u963F\u4E09\u5927\u82CF\u6253\u6492\u65E6\u963F\u677E\u5927\u963F\u677E\u5927\u963F\u677E\u5927"
+      objectReference: {fileID: 0}
+    - target: {fileID: 494476812716645065, guid: f74b9c320c4d8904487aeb97ab4ca226,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 494476812716645067, guid: f74b9c320c4d8904487aeb97ab4ca226,
         type: 3}

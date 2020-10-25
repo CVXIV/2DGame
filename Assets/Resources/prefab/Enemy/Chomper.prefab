@@ -213,6 +213,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackRange: 1
   listenRange: 4
+  bloodBarPre: {fileID: 4740400900245067488, guid: cc398b08fb7e2ab4eb3d74f71f973b09,
+    type: 3}
 --- !u!1 &1990024086500883836
 GameObject:
   m_ObjectHideFlags: 0

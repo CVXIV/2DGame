@@ -19,6 +19,7 @@ public abstract class BulletBase : MonoBehaviour {
         rigid = GetComponent<Rigidbody2D>();
         InitCollider();
         InitNumParm();
+        gameObject.SetActive(false);
     }
 
     private void Update() {
@@ -32,6 +33,11 @@ public abstract class BulletBase : MonoBehaviour {
     protected abstract void InitNumParm();
     protected abstract void Bomb();
 
+    public void SetPosition(Vector3 pos) {
+        transform.position = pos;
+        // 设置完位置之后才激活，否则可能在预制体默认位置与外界发生碰撞
+        gameObject.SetActive(true);
+    }
 
     // 动画最后一帧调用
     private void Destroy() {

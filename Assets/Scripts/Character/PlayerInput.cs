@@ -9,7 +9,7 @@ namespace CVXIV {
         public InputButton Pause = new InputButton(KeyCode.Escape, XboxControllerButtons.Menu);
         public InputButton Interact = new InputButton(KeyCode.E, XboxControllerButtons.Y);
         public InputButton NormalAttack = new InputButton(KeyCode.J, XboxControllerButtons.X);
-        public InputButton RangedAttack = new InputButton(KeyCode.K, XboxControllerButtons.B);
+        public InputButton SkillAttack = new InputButton(KeyCode.K, XboxControllerButtons.B);
         public InputButton Jump = new InputButton(KeyCode.Space, XboxControllerButtons.A);
         public InputAxis Horizontal = new InputAxis(KeyCode.D, KeyCode.A, XboxControllerAxes.LeftstickHorizontal);
         public InputAxis Vertical = new InputAxis(KeyCode.W, KeyCode.S, XboxControllerAxes.LeftstickVertical);
@@ -27,7 +27,7 @@ namespace CVXIV {
             Pause.Get(fixedUpdateHappened, inputType);
             Interact.Get(fixedUpdateHappened, inputType);
             NormalAttack.Get(fixedUpdateHappened, inputType);
-            RangedAttack.Get(fixedUpdateHappened, inputType);
+            SkillAttack.Get(fixedUpdateHappened, inputType);
             Jump.Get(fixedUpdateHappened, inputType);
             Horizontal.Get(inputType);
             Vertical.Get(inputType);
@@ -43,7 +43,7 @@ namespace CVXIV {
             GainControl(Pause);
             GainControl(Interact);
             GainControl(NormalAttack);
-            GainControl(RangedAttack);
+            GainControl(SkillAttack);
             GainControl(Jump);
             GainControl(Horizontal);
             GainControl(Vertical);
@@ -55,7 +55,7 @@ namespace CVXIV {
             ReleaseControl(Pause, resetValues);
             ReleaseControl(Interact, resetValues);
             ReleaseControl(NormalAttack, resetValues);
-            ReleaseControl(RangedAttack, resetValues);
+            ReleaseControl(SkillAttack, resetValues);
             ReleaseControl(Jump, resetValues);
             ReleaseControl(Horizontal, resetValues);
             ReleaseControl(Vertical, resetValues);
@@ -70,11 +70,11 @@ namespace CVXIV {
         }
 
         public void DisableRangedAttacking() {
-            RangedAttack.Disable();
+            SkillAttack.Disable();
         }
 
         public void EnableRangedAttacking() {
-            RangedAttack.Enable();
+            SkillAttack.Enable();
         }
 
         /*public DataSettings GetDataSettings() {
@@ -104,7 +104,7 @@ namespace CVXIV {
                 RangedAttack.Disable();
         }*/
 
-        void OnGUI() {
+        /*void OnGUI() {
             if (debugMenuIsOpen) {
                 const float height = 100;
 
@@ -130,6 +130,6 @@ namespace CVXIV {
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
             }
-        }
+        }*/
     }
 }

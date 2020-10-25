@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class MovePlatform : MonoBehaviour, ISwitchAble {
-
+    private readonly RaycastHit2D[] hits = new RaycastHit2D[16];
     public enum MovePlatformType {
         BACK_FORTH,
         LOOP,
@@ -33,6 +33,9 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
         Init();
     }
 
+    private void Start() {
+        StartCoroutine(AfterFixedUpdate());
+    }
 
     private void Init() {
         localNodes[0] = Vector3.zero;
@@ -48,10 +51,10 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
     }
 
     private void TransportObj() {
-        RaycastHit2D[] hits = Physics2D.BoxCastAll(box.bounds.center, 2 * box.bounds.extents, 0, Vector2.up, 0.1f, contactFilter2D.layerMask);
-        foreach(var hit in hits) {
+        int count = Physics2D.BoxCastNonAlloc(box.bounds.center, 2 * box.bounds.extents, 0, Vector2.up, hits, 0.1f, contactFilter2D.layerMask);
+        for (int i = 0; i < count; ++i) {
             float velocity_x = rigid.velocity.x;
-            hit.collider.attachedRigidbody.AddForce(new Vector2(hit.collider.attachedRigidbody.mass * velocity_x / Time.fixedDeltaTime, 0));
+            hits[i].collider.attachedRigidbody.AddForce(new Vector2(hits[i].collider.attachedRigidbody.mass * velocity_x / Time.fixedDeltaTime, 0));
         }
     }
 
@@ -59,8 +62,10 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
     /// 在FixedUpdate之后执行
     /// </summary>
     IEnumerator AfterFixedUpdate() {
-        TransportObj();
-        yield return Yields._FixedUpdate;
+        while (true) {
+            TransportObj();
+            yield return Yields._FixedUpdate;
+        }
     }
 
     protected virtual void FixedUpdate() {
@@ -121,7 +126,6 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
             }
         }
         rigid.velocity = currentSpeedVector;
-        StartCoroutine(AfterFixedUpdate());
     }
 
     public void StopMoving() {

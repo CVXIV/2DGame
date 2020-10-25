@@ -5,6 +5,11 @@ public class BeDamage : MonoBehaviour {
     [SerializeField]
     protected int health;
     protected int maxHealth;
+    public int MaxHealth {
+        get {
+            return maxHealth;
+        }
+    }
     public int Health {
         get {
             return health;

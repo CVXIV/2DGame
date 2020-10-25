@@ -9,7 +9,6 @@ namespace CVXIV {
             monoBehaviour.CheckCrouching();
             monoBehaviour.CheckIsOnGround();
             monoBehaviour.CrouchingCheckDownJump();
-            monoBehaviour.CheckIsHoldingGun();
         }
     }
 }

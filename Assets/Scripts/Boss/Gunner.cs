@@ -260,15 +260,15 @@ public class Gunner : MonoBehaviour {
 
     private void MakeBullet() {
         Projectile newBullet = Instantiate(projectile);
-        newBullet.transform.position = beamLaser.transform.position;
         var direction = -beamLaser.transform.right;
+        newBullet.SetPosition(beamLaser.transform.position);
         newBullet.LockTarget(direction, projectileSpeed);
     }
 
     private void MakeGrenade() {
         GrenadeK newBullet = Instantiate(grenade);
-        newBullet.transform.position = grenadePos.position;
         // 这里左边是图片的正方向
+        newBullet.SetPosition(grenadePos.position);
         newBullet.LockTarget(-transform.right);
     }
 

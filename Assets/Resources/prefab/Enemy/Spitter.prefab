@@ -169,7 +169,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 1
   damageType: 0
-  resetPos: Level4_Pos2
+  hittableLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  attackContactFilter:
+    useTriggers: 0
+    useLayerMask: 0
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
 --- !u!114 &3987448153134086487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,6 +213,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackRange: 5
   listenRange: 7
+  bloodBarPre: {fileID: 4740400900245067488, guid: cc398b08fb7e2ab4eb3d74f71f973b09,
+    type: 3}
 --- !u!1 &3987448154582518152
 GameObject:
   m_ObjectHideFlags: 0

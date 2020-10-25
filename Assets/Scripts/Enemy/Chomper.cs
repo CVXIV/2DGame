@@ -1,10 +1,48 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Chomper : EnemyBase {
     #region 属性
+    public GameObject bloodBarPre;
+    private Canvas canvas;
+    private Slider bloodBar;
     #endregion
+
+    protected override void Awake() {
+        base.Awake();
+        InitBloodBar();
+    }
+
+    private void InitBloodBar() {
+        if (bloodBarPre != null) {
+            canvas = Instantiate(bloodBarPre, transform).GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.worldCamera = Camera.main;
+            canvas.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+            bloodBar = canvas.GetComponentInChildren<Slider>();
+            bloodBar.wholeNumbers = true;
+            bloodBar.value = bloodBar.maxValue = beDamage.Health;
+            bloodBar.transform.position = transform.position + new Vector3(0, m_Collider.bounds.size.y, 0);
+            beDamage.onHurt += OnHurt;
+            beDamage.onDead += Ondead;
+        }
+    }
+
+    public override void SetSpeedX(float value) {
+        base.SetSpeedX(value);
+        canvas.transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    private void OnHurt(DamageType damageType, int value) {
+        bloodBar.value = beDamage.Health;
+    }
+
+    private void Ondead(int value) {
+        bloodBar.value = beDamage.Health;
+    }
 
     private void OnCollisionEnter2D(Collision2D collision) {
         if (collision.gameObject.CompareTag(ConstantVar.PlayTag)) {

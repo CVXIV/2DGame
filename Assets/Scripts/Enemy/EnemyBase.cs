@@ -16,6 +16,9 @@ public class EnemyBase : MonoBehaviour {
     public float attackRange;
     public float listenRange;
 
+    protected readonly Collider2D[] targets = new Collider2D[4];
+    protected int layerMask;
+
     protected Damage damage;
     protected BeDamage beDamage;
     protected Transform checkPath;
@@ -35,6 +38,7 @@ public class EnemyBase : MonoBehaviour {
     #endregion
 
     protected virtual void Awake() {
+        layerMask = LayerMask.GetMask(ConstantVar.PlayLayer);
         beDamage = GetComponent<BeDamage>();
         beDamage.onDead += OnDead;
 
@@ -45,6 +49,7 @@ public class EnemyBase : MonoBehaviour {
         rigid = GetComponent<Rigidbody2D>();
         m_Collider = GetComponent<BoxCollider2D>();
 
+        isFlip = transform.rotation.eulerAngles.y == 180;
         InitCollider();
         InitNumParm();
     }
@@ -93,21 +98,22 @@ public class EnemyBase : MonoBehaviour {
     /// 检测周围是否有攻击目标
     /// </summary>
     protected virtual void CheckTarget() {
-        Collider2D result = Physics2D.OverlapCircle(transform.position, listenRange, LayerMask.GetMask(ConstantVar.PlayLayer));
-        if (result != null && !IsLock()) {
-            if (Vector2.Distance(transform.position, result.transform.position) <= attackRange) {
+        int count = Physics2D.OverlapCircleNonAlloc(transform.position, listenRange, targets, layerMask);
+        if (count > 0 && !IsLock()) {
+            Transform resultTransform = targets[0].transform;
+            if (Vector2.Distance(transform.position, resultTransform.position) <= attackRange) {
                 // 设置为攻击状态
-                curTarget = result.transform;
+                curTarget = resultTransform;
                 SetStatus(EnemyStatus.ATTACK);
-                SetRotation(result.transform.position.x < transform.position.x);
+                SetRotation(resultTransform.position.x < transform.position.x);
             } else {
                 // 跑向目标
-                if (Mathf.Abs(result.transform.position.x - transform.position.x) < 0.1f) {
+                if (Mathf.Abs(resultTransform.position.x - transform.position.x) < 0.1f) {
                     SetStatus(EnemyStatus.WAIT);
                 } else {
                     // 设置为奔跑状态
                     SetStatus(EnemyStatus.RUN);
-                    RunSpeed = result.transform.position.x > transform.position.x ? Mathf.Abs(RunSpeed) : -Mathf.Abs(RunSpeed);
+                    RunSpeed = resultTransform.position.x > transform.position.x ? Mathf.Abs(RunSpeed) : -Mathf.Abs(RunSpeed);
                     SetSpeedX(RunSpeed);
                 }
             }

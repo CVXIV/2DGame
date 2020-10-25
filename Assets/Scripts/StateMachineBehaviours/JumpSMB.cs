@@ -8,8 +8,8 @@ namespace CVXIV {
             monoBehaviour.CheckFacing();
             monoBehaviour.CheckIsOnGround();
             monoBehaviour.JumpingUpdateJump();
-            monoBehaviour.CheckIsHoldingGun();
             monoBehaviour.CheckNormalAttack();
+            monoBehaviour.CheckSkillAttack();
         }
     }
 }

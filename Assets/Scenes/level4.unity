@@ -26825,7 +26825,7 @@ GameObject:
   - component: {fileID: 277451030}
   - component: {fileID: 277451032}
   - component: {fileID: 277451031}
-  m_Layer: 15
+  m_Layer: 0
   m_Name: Tilemap_BG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -124612,7 +124612,7 @@ GameObject:
   - component: {fileID: 1828608937}
   - component: {fileID: 1828608939}
   - component: {fileID: 1828608938}
-  m_Layer: 15
+  m_Layer: 20
   m_Name: Tilemap_WaterBlockers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -134653,11 +134653,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Spitter
-      objectReference: {fileID: 0}
-    - target: {fileID: 3987448153134086477, guid: 9464821290351164c87c76abbbdda0b1,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3987448153134086486, guid: 9464821290351164c87c76abbbdda0b1,
         type: 3}

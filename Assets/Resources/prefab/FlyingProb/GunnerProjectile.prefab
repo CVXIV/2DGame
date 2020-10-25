@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 6f348586a663cbb4485e2ef429446869, type: 3}
-  m_Color: {r: 1, g: 0.40439457, b: 0.023584902, a: 1}
+  m_Color: {r: 0.3160377, g: 1, b: 0.5879175, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -116,7 +116,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 1
   damageType: 0
-  resetPos: 
+  hittableLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  attackContactFilter:
+    useTriggers: 0
+    useLayerMask: 0
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
 --- !u!114 &5694374862667859801
 MonoBehaviour:
   m_ObjectHideFlags: 0

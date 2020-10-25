@@ -12,8 +12,9 @@ namespace CVXIV {
             monoBehaviour.GroundedCheckJump();
             monoBehaviour.CheckIsOnGround();
             monoBehaviour.CheckIsPush();
-            monoBehaviour.CheckIsHoldingGun();
             monoBehaviour.CheckNormalAttack();
+            monoBehaviour.CheckSkillAttack();
+            monoBehaviour.SetLocomotionSpeed();
         }
     }
 }

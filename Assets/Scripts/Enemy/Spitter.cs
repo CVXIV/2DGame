@@ -1,11 +1,49 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Spitter : EnemyBase {
     #region 变量
     private GameObject bullet;
+    public GameObject bloodBarPre;
+    private Canvas canvas;
+    private Slider bloodBar;
     #endregion
+
+    protected override void Awake() {
+        base.Awake();
+        InitBloodBar();
+    }
+
+    private void InitBloodBar() {
+        if (bloodBarPre != null) {
+            canvas = Instantiate(bloodBarPre, transform).GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.worldCamera = Camera.main;
+            canvas.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+            bloodBar = canvas.GetComponentInChildren<Slider>();
+            bloodBar.wholeNumbers = true;
+            bloodBar.value = bloodBar.maxValue = beDamage.Health;
+            bloodBar.transform.position = transform.position + new Vector3(0, m_Collider.bounds.size.y, 0);
+            beDamage.onHurt += OnHurt;
+            beDamage.onDead += Ondead;
+        }
+    }
+
+    public override void SetSpeedX(float value) {
+        base.SetSpeedX(value);
+        canvas.transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    private void OnHurt(DamageType damageType, int value) {
+        bloodBar.value = beDamage.Health;
+    }
+
+    private void Ondead(int value) {
+        bloodBar.value = beDamage.Health;
+    }
 
     protected override void InitNumParm() {
         idel_time = 1.5f;
@@ -29,8 +67,8 @@ public class Spitter : EnemyBase {
         if (bullet == null) {
             bullet = Resources.Load<GameObject>("prefab/FlyingProb/TraceBullet");
         }
-        GameObject newBullet = Instantiate(bullet);
-        newBullet.transform.position = m_Collider.bounds.center + transform.right * m_Collider.bounds.extents.x;
-        newBullet.GetComponent<TraceBullet>().LockTarget(curTarget, isFlip);
+        TraceBullet newBullet = Instantiate(bullet).GetComponent<TraceBullet>();
+        newBullet.LockTarget(curTarget, isFlip);
+        newBullet.SetPosition(m_Collider.bounds.center + transform.right * m_Collider.bounds.extents.x);
     }
 }

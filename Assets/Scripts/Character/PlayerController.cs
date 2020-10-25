@@ -7,17 +7,28 @@ namespace CVXIV {
 
     [RequireComponent(typeof(Animator), typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour {
+
+        protected static PlayerController _instance;
+
+        public static PlayerController Instance {
+            get {
+                return _instance;
+            }
+        }
+
+
         private bool isFlip;
         private Rigidbody2D rigid;
         private Animator animator;
         private Damage damage;
         private BeDamage beDamage;
         private Collider2D box;
-        private ContactFilter2D contactFilter2D;
+        private int bulletLayerMask;
         private PassPlatform passPlatform;
         private readonly List<Collider2D> contacts = new List<Collider2D>();
         private float xScale, yScale;
         private bool isPause = false;
+        private readonly RaycastHit2D[] raycastHit2Ds = new RaycastHit2D[4];
 
         public AttackRange normalAttackCheck;
         public float maxSpeedX = 7;
@@ -32,12 +43,10 @@ namespace CVXIV {
         // 水平减速度
         private readonly float groundDeceleration = 80f;
         // 射击攻击间隔
-        private readonly float fireGap = 0.8f;
-        private readonly float normalAttackGap = 1f;
-        private float holdingGunTimeRemaining;
-        private float fireTime = 0;
+        private readonly float normalAttackGap = 0.5f;
+        private readonly float skillAttackGap = 0.8f;
         private bool isReadyNormalAttack = true;
-        private Coroutine fireCoroutine;
+        private bool isReadySkillAttack = true;
 
         private Vector2 currentVelocity;
         private bool isOnGround = true;
@@ -45,10 +54,11 @@ namespace CVXIV {
         // 动画参数
         protected readonly int hashHorizontalSpeed = Animator.StringToHash("HorizontalSpeed");
         protected readonly int hashVerticalSpeed = Animator.StringToHash("VerticalSpeed");
+        protected readonly int hashLocomotionSpeed = Animator.StringToHash("LocomotionSpeed");
         protected readonly int hashCrouching = Animator.StringToHash("Crouching");
         protected readonly int hashGround = Animator.StringToHash("grounded");
         protected readonly int hashPushing = Animator.StringToHash("Pushing");
-        protected readonly int hashHoldingGun = Animator.StringToHash("withgun");
+        protected readonly int hashSkillAttack = Animator.StringToHash("skillAttack");
         protected readonly int hashNormalAttack = Animator.StringToHash("normalAttack");
         protected readonly int hashOnHurt = Animator.StringToHash("onHurt");
         protected readonly int hashInvincible = Animator.StringToHash("Invincible");
@@ -58,6 +68,13 @@ namespace CVXIV {
         private Vector3 initPos;
 
         private void Awake() {
+            if (_instance == null) {
+                _instance = this;
+            } else {
+                throw new UnityException("There cannot be more than one PlayerController script.  The instances are " + _instance.name + " and " + name + ".");
+            }
+
+
             xScale = Mathf.Abs(transform.localScale.x);
             yScale = Mathf.Abs(transform.localScale.y);
             InitBeDamage();
@@ -66,8 +83,7 @@ namespace CVXIV {
             rigid = GetComponent<Rigidbody2D>();
             animator = GetComponent<Animator>();
             SceneLinkedSMB<PlayerController>.Initialise(animator, this);
-            contactFilter2D.SetLayerMask(1 << ConstantVar.groundLayer);
-
+            bulletLayerMask = LayerMask.GetMask(ConstantVar.GroundLayerName);
             isFlip = transform.localScale.x == -xScale;
             currentVelocity = rigid.velocity;
             initPos = transform.position;
@@ -146,6 +162,10 @@ namespace CVXIV {
             animator.SetBool(hashCrouching, PlayerInput.Instance.Vertical.Value < 0);
         }
 
+        public void SetLocomotionSpeed() {
+            animator.SetFloat(hashLocomotionSpeed, Mathf.Approximately(currentVelocity.x, 0) ? 1 : currentVelocity.x / 3);
+        }
+
         public void GroundedHorizontalMovement(bool useInput) {
             // 最终速度
             float desiredSpeed = useInput ? PlayerInput.Instance.Horizontal.Value * maxSpeedX : 0f;
@@ -163,7 +183,7 @@ namespace CVXIV {
 
         public void JumpingUpdateJump() {
             timeY += Time.deltaTime;
-            if (PlayerInput.Instance.Jump.Up) {
+            if (PlayerInput.Instance.Jump.Up || PlayerInput.Instance.Jump.Down) {
                 timeY = 0.22f;
             } else if (PlayerInput.Instance.Jump.Held && timeY < 0.2f) {
                 currentVelocity.y = maxSpeedY;
@@ -183,10 +203,6 @@ namespace CVXIV {
             }
         }
 
-        public void SetVelocity(Vector2 velocity) {
-            rigid.velocity = this.currentVelocity = velocity;
-        }
-
         public void CheckIsOnGround() {
             animator.SetBool(hashGround, isOnGround);
         }
@@ -199,8 +215,8 @@ namespace CVXIV {
 
         public void CheckIsPush() {
             if (PlayerInput.Instance.Horizontal.ReceivingInput) {
-                RaycastHit2D result = Physics2D.BoxCast(box.bounds.center, 2 * box.bounds.extents, 0, isFlip ? Vector2.left : Vector2.right, 0.1f, LayerMask.GetMask(ConstantVar.GroundLayerName));
-                if (result && result.collider.GetComponent<Pushable>() != null) {
+                int count = Physics2D.BoxCastNonAlloc(box.bounds.center, 2 * box.bounds.extents, 0, isFlip ? Vector2.left : Vector2.right, raycastHit2Ds, 0.1f, LayerMask.GetMask(ConstantVar.GroundLayerName));
+                if (count > 0 && raycastHit2Ds[0].collider.GetComponent<Pushable>() != null) {
                     animator.SetBool(hashPushing, true);
                     return;
                 }
@@ -208,45 +224,16 @@ namespace CVXIV {
             animator.SetBool(hashPushing, false);
         }
 
-        public void CheckIsHoldingGun() {
-            if (PlayerInput.Instance.RangedAttack.Held) {
-                holdingGunTimeRemaining = holdingGunDuration;
-                animator.SetBool(hashHoldingGun, true);
-            } else {
-                if (holdingGunTimeRemaining <= 0) {
-                    animator.SetBool(hashHoldingGun, false);
-                } else {
-                    holdingGunTimeRemaining -= Time.deltaTime;
-                }
-            }
-        }
-
-        public void CheckGunFire() {
-            if (PlayerInput.Instance.RangedAttack.Held && animator.GetBool(hashHoldingGun)) {
-                if (fireCoroutine == null) {
-                    fireCoroutine = StartCoroutine(Fire());
-                }
-            }
-
-            if ((PlayerInput.Instance.RangedAttack.Up || !animator.GetBool(hashHoldingGun)) && fireCoroutine != null) {
-                StopCoroutine(fireCoroutine);
-                fireCoroutine = null;
-            }
-        }
-
-        public void ForceNotHoldingGun() {
-            animator.SetBool(hashHoldingGun, false);
-            if (fireCoroutine != null) {
-                StopCoroutine(fireCoroutine);
-                fireCoroutine = null;
+        public void SetIsReadyNormalAttack(bool isReadyNormalAttack) {
+            this.isReadyNormalAttack = isReadyNormalAttack;
+            if (!isReadyNormalAttack) {
+                Invoke(nameof(ResetNormalAttack), normalAttackGap);
             }
         }
 
         public void CheckNormalAttack() {
             if (isReadyNormalAttack && PlayerInput.Instance.NormalAttack.Held) {
                 animator.SetTrigger(hashNormalAttack);
-                isReadyNormalAttack = false;
-                Invoke(nameof(ResetNormalAttack), normalAttackGap);
             }
         }
 
@@ -254,30 +241,32 @@ namespace CVXIV {
             isReadyNormalAttack = true;
         }
 
-        private IEnumerator Fire() {
-            while (PlayerInput.Instance.RangedAttack.Held) {
-                if (Time.time >= fireTime) {
-                    MakeBullet();
-                    fireTime = Time.time + fireGap;
-                }
-                yield return null;
+
+        public void CheckSkillAttack() {
+            if (isReadySkillAttack && PlayerInput.Instance.SkillAttack.Held) {
+                animator.SetTrigger(hashSkillAttack);
+                isReadySkillAttack = false;
+                Invoke(nameof(ResetSkillAttack), skillAttackGap);
             }
         }
 
-        private void MakeBullet() {
+        private void ResetSkillAttack() {
+            isReadySkillAttack = true;
+        }
+
+        public void MakeBullet() {
             // 首先检测是否有障碍物
             Vector2 testPosition = transform.position;
             testPosition.y = bulletPos.position.y;
             Vector2 direction = (Vector2)bulletPos.position - testPosition;
             float distance = direction.magnitude;
             direction.Normalize();
-            List<RaycastHit2D> results = new List<RaycastHit2D>();
-            if (Physics2D.Raycast(testPosition, direction, contactFilter2D, results, distance) > 0) {
+            if (Physics2D.Raycast(testPosition, direction, distance, bulletLayerMask)) {
                 return;
             }
-            GameObject newBullet = Instantiate(bullet);
-            newBullet.transform.position = bulletPos.position;
-            newBullet.GetComponent<Bullet>().SetSpeed(!isFlip);
+            Bullet newBullet = Instantiate(bullet).GetComponent<Bullet>();
+            newBullet.SetPosition(bulletPos.transform.position);
+            newBullet.SetSpeed(!isFlip);
         }
 
 
@@ -382,6 +371,7 @@ namespace CVXIV {
         }
 
         public void SetKinematic(bool isKinematic) {
+            currentVelocity = rigid.velocity = Vector2.zero;
             rigid.bodyType = isKinematic ? RigidbodyType2D.Kinematic : RigidbodyType2D.Dynamic;
         }
 

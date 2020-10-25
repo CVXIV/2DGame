@@ -9,15 +9,6 @@ namespace CVXIV {
 
         public SceneTransitionDestination initialSceneTransitionDestination;
 
-        protected PlayerController playerController;
-        protected PlayerController PlayerController {
-            get {
-                if(playerController == null) {
-                    playerController = FindObjectOfType<PlayerController>();
-                }
-                return playerController;
-            }
-        }
         protected bool transitioning;
 
         /// <summary>
@@ -32,21 +23,20 @@ namespace CVXIV {
         protected override void Awake() {
             base.Awake();
             DontDestroyOnLoad(gameObject);
-            playerController = FindObjectOfType<PlayerController>();
-/*            if (initialSceneTransitionDestination != null) {
-                SetEnteringGameObjectLocation(initialSceneTransitionDestination);
-                ScreenFader.SetAlpha(1f);
-                StartCoroutine(ScreenFader.FadeSceneOut());
-                initialSceneTransitionDestination.OnReachDestination.Invoke();
-            } else {
-                currentZoneScene = SceneManager.GetActiveScene();
-                zoneRestartDestinationName = SceneTransitionDestination.DestinationTag.A;
-            }*/
+            /*            if (initialSceneTransitionDestination != null) {
+                            SetEnteringGameObjectLocation(initialSceneTransitionDestination);
+                            ScreenFader.SetAlpha(1f);
+                            StartCoroutine(ScreenFader.FadeSceneOut());
+                            initialSceneTransitionDestination.OnReachDestination.Invoke();
+                        } else {
+                            currentZoneScene = SceneManager.GetActiveScene();
+                            zoneRestartDestinationName = SceneTransitionDestination.DestinationTag.A;
+                        }*/
         }
 
         public static void RestartZone(bool resetHealth = true) {
             if (resetHealth) {
-                Instance.PlayerController.GetComponent<PlayerBeDamage>().ResetHealth();
+                PlayerController.Instance.GetComponent<PlayerBeDamage>().ResetHealth();
             }
             Instance.StartCoroutine(Instance.Transition(SceneManager.GetActiveScene().name, true, null));
         }
@@ -68,6 +58,8 @@ namespace CVXIV {
             //PersistentDataManager.SaveAllData();
             // 加载场景前取消控制
             PlayerInput.Instance.ReleaseControl(resetInputValues);
+            PlayerController.Instance.SetKinematic(true);
+            PlayerController.Instance.gameObject.SetActive(false);
             yield return StartCoroutine(ScreenFader.FadeSceneIn(ScreenFader.FadeType.Loading));
             //PersistentDataManager.ClearPersisters();
             // 等待场景加载完毕才能继续设置人物的位置信息

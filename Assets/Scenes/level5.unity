@@ -41095,10 +41095,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rounds:
-  - bossHP: 2
-    shieldHP: 2
-  - bossHP: 2
-    shieldHP: 2
+  - bossHP: 10
+    shieldHP: 10
+  - bossHP: 5
+    shieldHP: 10
   lightningManage: {fileID: 1689237286718879057, guid: 3e35f1edd87471343b024123906e28b7,
     type: 3}
   projectile: {fileID: 5694374862667859801, guid: edb39ba1b57d3d64996b80585517af60,

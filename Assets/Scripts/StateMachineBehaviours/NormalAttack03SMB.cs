@@ -1,22 +1,23 @@
 ﻿using UnityEngine;
 
 namespace CVXIV {
-    public class DeadSMB : SceneLinkedSMB<PlayerController> {
-
-        public override void OnSLStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
-            base.OnSLStateEnter(animator, stateInfo, layerIndex);
-            monoBehaviour.SetKinematic(true);
-        }
-
+    public class NormalAttack03SMB : SceneLinkedSMB<PlayerController> {
+        private bool hasAttack = false;
         public override void OnSLStateNoTransitionUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
             base.OnSLStateNoTransitionUpdate(animator, stateInfo, layerIndex);
+            monoBehaviour.GroundedHorizontalMovement(false);
+            if (!hasAttack && stateInfo.normalizedTime >= 0.66f) {
+                monoBehaviour.AttackDamage();
+                hasAttack = true;
+            }
             monoBehaviour.CheckIsOnGround();
-            //monoBehaviour.GroundedHorizontalMovement(false);
         }
 
         public override void OnSLStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
             base.OnSLStateExit(animator, stateInfo, layerIndex);
-            monoBehaviour.SetKinematic(false);
+            monoBehaviour.SetIsReadyNormalAttack(false);
+            hasAttack = false;
         }
+
     }
 }
