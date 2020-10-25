@@ -57,9 +57,14 @@ namespace CVXIV {
             transitioning = true;
             //PersistentDataManager.SaveAllData();
             // 加载场景前取消控制
-            PlayerInput.Instance.ReleaseControl(resetInputValues);
-            PlayerController.Instance.SetKinematic(true);
-            PlayerController.Instance.gameObject.SetActive(false);
+            // 如果是加载第一关，则Instance为null
+            if (PlayerInput.Instance != null) {
+                PlayerInput.Instance.ReleaseControl(resetInputValues);
+            }
+            if (PlayerController.Instance != null) {
+                PlayerController.Instance.SetKinematic(true);
+                PlayerController.Instance.gameObject.SetActive(false);
+            }
             yield return StartCoroutine(ScreenFader.FadeSceneIn(ScreenFader.FadeType.Loading));
             //PersistentDataManager.ClearPersisters();
             // 等待场景加载完毕才能继续设置人物的位置信息
