@@ -41481,6 +41481,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7815e509bacad344a91b7926441017c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1213113976 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6790218026504307340, guid: cfcb75b45bf716542bad69175ccdd4b8,
+    type: 3}
+  m_PrefabInstance: {fileID: 1213113972}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1213113974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b264832627b274a4b8a62f0ba2f8ad33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!61 &1213113980 stripped
 BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 6790218026504307342, guid: cfcb75b45bf716542bad69175ccdd4b8,
@@ -42168,7 +42180,7 @@ PrefabInstance:
         type: 3}
       propertyPath: OnReachDestination.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1213113976}
     - target: {fileID: 1290124379391836561, guid: 09182cdc02947ec418ad32406af32638,
         type: 3}
       propertyPath: OnReachDestination.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
