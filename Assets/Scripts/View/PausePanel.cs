@@ -7,17 +7,9 @@ namespace CVXIV {
     public class PausePanel : BasePanel {
 
         public OptionPanel optionPanel;
-        private PlayerController playerController;
-
-        private void Awake() {
-            playerController = FindObjectOfType<PlayerController>();
-        }
 
         public void ExitPause() {
-            if (playerController == null) {
-                playerController = FindObjectOfType<PlayerController>();
-            }
-            playerController.Unpause();
+            PlayerController.Instance.Unpause();
         }
 
         public void RestartLevel() {

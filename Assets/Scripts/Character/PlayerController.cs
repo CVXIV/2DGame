@@ -121,9 +121,11 @@ namespace CVXIV {
         }
 
         private IEnumerator UnpauseCoRoutine() {
-            yield return SceneManager.UnloadSceneAsync(ConstantVar.PauseMenuName);
+            // 如果yield return UnloadSceneAsync，那么Time.timeScale = 1得在之前设置，不然会暂停卸载
+            SceneManager.UnloadSceneAsync(ConstantVar.PauseMenuName);
             Time.timeScale = 1;
             yield return Yields._FixedUpdate;
+            yield return new WaitForEndOfFrame();
             PlayerInput.Instance.GainControl();
             isPause = false;
         }
