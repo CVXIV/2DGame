@@ -9,6 +9,7 @@ namespace CVXIV {
             monoBehaviour.GroundedHorizontalMovement(true);
             monoBehaviour.CheckFacing();
             monoBehaviour.CheckCrouching();
+            monoBehaviour.CheckTumble();
             monoBehaviour.GroundedCheckJump();
             monoBehaviour.CheckIsOnGround();
             monoBehaviour.CheckIsPush();

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 public class Spitter : EnemyBase {
@@ -17,19 +18,18 @@ public class Spitter : EnemyBase {
     }
 
     private void InitBloodBar() {
-        if (bloodBarPre != null) {
-            canvas = Instantiate(bloodBarPre, transform).GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            canvas.worldCamera = Camera.main;
-            canvas.transform.rotation = Quaternion.Euler(0, 0, 0);
+        Assert.AreNotEqual(bloodBarPre, null);
+        canvas = Instantiate(bloodBarPre, transform).GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.WorldSpace;
+        canvas.worldCamera = Camera.main;
+        canvas.transform.rotation = Quaternion.Euler(0, 0, 0);
 
-            bloodBar = canvas.GetComponentInChildren<Slider>();
-            bloodBar.wholeNumbers = true;
-            bloodBar.value = bloodBar.maxValue = beDamage.Health;
-            bloodBar.transform.position = transform.position + new Vector3(0, m_Collider.bounds.size.y, 0);
-            beDamage.onHurt += OnHurt;
-            beDamage.onDead += Ondead;
-        }
+        bloodBar = canvas.GetComponentInChildren<Slider>();
+        bloodBar.wholeNumbers = true;
+        bloodBar.value = bloodBar.maxValue = beDamage.Health;
+        bloodBar.transform.position = transform.position + new Vector3(0, m_Collider.bounds.size.y, 0);
+        beDamage.onHurt += OnHurt;
+        beDamage.onDead += Ondead;
     }
 
     public override void SetSpeedX(float value) {

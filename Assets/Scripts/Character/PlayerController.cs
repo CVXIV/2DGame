@@ -63,6 +63,7 @@ namespace CVXIV {
         protected readonly int hashOnHurt = Animator.StringToHash("onHurt");
         protected readonly int hashInvincible = Animator.StringToHash("Invincible");
         protected readonly int hashDead = Animator.StringToHash("Dead");
+        protected readonly int hashTumble = Animator.StringToHash("tumble");
         // 重生点
         private CheckPoint checkPoint;
         private Vector3 initPos;
@@ -124,8 +125,10 @@ namespace CVXIV {
             // 如果yield return UnloadSceneAsync，那么Time.timeScale = 1得在之前设置，不然会暂停卸载
             SceneManager.UnloadSceneAsync(ConstantVar.PauseMenuName);
             Time.timeScale = 1;
+            // 等待下一个FixedUpdate，这样输入系统的信号就会重置；否则持续运行的Update函数便会重新捕捉到原先的信号，从而再一次触发暂停功能
             yield return Yields._FixedUpdate;
-            yield return new WaitForEndOfFrame();
+            // 等待下一个Update，同上
+            yield return Yields._endOfFrame;
             PlayerInput.Instance.GainControl();
             isPause = false;
         }
@@ -157,6 +160,12 @@ namespace CVXIV {
                     passPlatform.ReadyToGround = false;
                     passPlatform = null;
                 }
+            }
+        }
+
+        public void CheckTumble() {
+            if (PlayerInput.Instance.Tumble.Down) {
+                animator.SetTrigger(hashTumble);
             }
         }
 
@@ -372,9 +381,25 @@ namespace CVXIV {
             transform.localScale = isFlip ? new Vector2(-xScale, yScale) : new Vector2(xScale, yScale);
         }
 
-        public void SetKinematic(bool isKinematic) {
-            currentVelocity = rigid.velocity = Vector2.zero;
+        public void SetKinematic(bool isKinematic, bool resetVelocity = true) {
+            if (resetVelocity) {
+                currentVelocity = rigid.velocity = Vector2.zero;
+            }
             rigid.bodyType = isKinematic ? RigidbodyType2D.Kinematic : RigidbodyType2D.Dynamic;
+        }
+
+        public void AddForce(float force) {
+            currentVelocity += new Vector2((isFlip ? -force : force) / rigid.mass * Time.deltaTime, 0);
+        }
+
+        // 无敌状态
+        public void IsInvincible(bool isInvincible) {
+            if (isInvincible) {
+                beDamage.Disable();
+            } else {
+                beDamage.Enable();
+            }
+            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer(ConstantVar.EnemyLayer), LayerMask.NameToLayer(ConstantVar.PlayLayer), isInvincible);
         }
 
         #endregion

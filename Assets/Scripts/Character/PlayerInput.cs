@@ -11,6 +11,7 @@ namespace CVXIV {
         public InputButton NormalAttack = new InputButton(KeyCode.J, XboxControllerButtons.X);
         public InputButton SkillAttack = new InputButton(KeyCode.K, XboxControllerButtons.B);
         public InputButton Jump = new InputButton(KeyCode.Space, XboxControllerButtons.A);
+        public InputButton Tumble = new InputButton(KeyCode.LeftShift, XboxControllerButtons.RightBumper);
         public InputAxis Horizontal = new InputAxis(KeyCode.D, KeyCode.A, XboxControllerAxes.LeftstickHorizontal);
         public InputAxis Vertical = new InputAxis(KeyCode.W, KeyCode.S, XboxControllerAxes.LeftstickVertical);
         /*[HideInInspector]
@@ -20,8 +21,6 @@ namespace CVXIV {
         public bool HaveControl { get { return haveControl; } }
 
 
-        protected bool debugMenuIsOpen = false;
-
 
         protected override void GetInputs(bool fixedUpdateHappened) {
             Pause.Get(fixedUpdateHappened, inputType);
@@ -29,12 +28,9 @@ namespace CVXIV {
             NormalAttack.Get(fixedUpdateHappened, inputType);
             SkillAttack.Get(fixedUpdateHappened, inputType);
             Jump.Get(fixedUpdateHappened, inputType);
+            Tumble.Get(fixedUpdateHappened, inputType);
             Horizontal.Get(inputType);
             Vertical.Get(inputType);
-
-            if (Input.GetKeyDown(KeyCode.F12)) {
-                debugMenuIsOpen = !debugMenuIsOpen;
-            }
         }
 
         public override void GainControl() {
@@ -45,6 +41,7 @@ namespace CVXIV {
             GainControl(NormalAttack);
             GainControl(SkillAttack);
             GainControl(Jump);
+            GainControl(Tumble);
             GainControl(Horizontal);
             GainControl(Vertical);
         }
@@ -57,6 +54,7 @@ namespace CVXIV {
             ReleaseControl(NormalAttack, resetValues);
             ReleaseControl(SkillAttack, resetValues);
             ReleaseControl(Jump, resetValues);
+            ReleaseControl(Tumble, resetValues);
             ReleaseControl(Horizontal, resetValues);
             ReleaseControl(Vertical, resetValues);
         }
