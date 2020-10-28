@@ -211,7 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bec1ba9478361ed4d9426c195caffc54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackRange: 1
+  attackRange: 1.5
   listenRange: 4
   bloodBarPre: {fileID: 4740400900245067488, guid: cc398b08fb7e2ab4eb3d74f71f973b09,
     type: 3}

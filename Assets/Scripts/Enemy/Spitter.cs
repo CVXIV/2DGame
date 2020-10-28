@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using CVXIV;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -10,11 +11,16 @@ public class Spitter : EnemyBase {
     public GameObject bloodBarPre;
     private Canvas canvas;
     private Slider bloodBar;
+    private readonly string attack = "attack";
+    private readonly string speed = "speed";
+    private readonly string dead = "dead";
+    private float idleCount = 0;
     #endregion
 
     protected override void Awake() {
         base.Awake();
         InitBloodBar();
+        SceneLinkedSMB<Spitter>.Initialise(animator, this);
     }
 
     private void InitBloodBar() {
@@ -28,20 +34,81 @@ public class Spitter : EnemyBase {
         bloodBar.wholeNumbers = true;
         bloodBar.value = bloodBar.maxValue = beDamage.Health;
         bloodBar.transform.position = transform.position + new Vector3(0, m_Collider.bounds.size.y, 0);
-        beDamage.onHurt += OnHurt;
-        beDamage.onDead += Ondead;
     }
 
-    public override void SetSpeedX(float value) {
+    #region AI
+    public void AliveCheck() {
+        if (!IsAlive()) {
+            animator.SetBool(dead, true);
+        }
+    }
+
+    public void SetIdle() {
+        SetSpeedX(0);
+    }
+
+    public override void EmenyCheck() {
+        base.EmenyCheck();
+        if (enemyBoxCollider != null) {
+            idleCount = 0;
+            ModifyDirection();
+            if (Vector2.Distance(transform.position, enemyBoxCollider.transform.position) <= attackRange) {
+                animator.SetTrigger(attack);
+            } else {
+                if (Mathf.Abs(enemyBoxCollider.transform.position.x - transform.position.x) < 0.3f) {
+                    SetIdle();
+                } else {
+                    Run();
+                }
+            }
+        } else {
+            Walk();
+        }
+    }
+    private void Walk() {
+        if (CheckPath()) {
+            SetSpeedX(isFlip ? -WalkSpeed : WalkSpeed);
+        } else {
+            if (idleCount >= idel_time) {
+                idleCount = 0;
+                TurnAround();
+            } else {
+                SetIdle();
+                idleCount += Time.deltaTime;
+            }
+        }
+    }
+
+    private void Run() {
+        if (CheckPath()) {
+            SetSpeedX(isFlip ? -RunSpeed : RunSpeed);
+        } else {
+            SetSpeedX(0);
+        }
+    }
+
+    private void ModifyDirection() {
+        bool isFlip = enemyBoxCollider.bounds.center.x < m_Collider.bounds.center.x;
+        SetRotation(isFlip);
+    }
+
+    private void TurnAround() {
+        SetRotation(!isFlip);
+    }
+
+    #endregion
+
+    protected override void SetSpeedX(float value) {
         base.SetSpeedX(value);
+        animator.SetFloat(speed, value);
         canvas.transform.rotation = Quaternion.Euler(0, 0, 0);
     }
 
-    private void OnHurt(DamageType damageType, int value) {
+    protected override void OnHurt(DamageType damageType, int value) {
         bloodBar.value = beDamage.Health;
     }
 
-    private void Ondead(int value) {
+    protected override void OnDead(int value) {
         bloodBar.value = beDamage.Health;
     }
 
@@ -57,18 +124,12 @@ public class Spitter : EnemyBase {
         }
     }
 
-    protected override void PlayAnimation() {
-        animator.SetBool("is_run", status == EnemyStatus.RUN);
-        animator.SetBool("is_walk", status == EnemyStatus.WALK);
-        animator.SetBool("is_attack", status == EnemyStatus.ATTACK);
-    }
-
     public void MakeBullet() {
         if (bullet == null) {
             bullet = Resources.Load<GameObject>("prefab/FlyingProb/TraceBullet");
         }
         TraceBullet newBullet = Instantiate(bullet).GetComponent<TraceBullet>();
-        newBullet.LockTarget(curTarget, isFlip);
+        newBullet.LockTarget(enemyBoxCollider.transform, isFlip);
         newBullet.SetPosition(m_Collider.bounds.center + transform.right * m_Collider.bounds.extents.x);
     }
 }

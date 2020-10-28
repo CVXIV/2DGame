@@ -68,6 +68,10 @@ namespace CVXIV {
             return new ConditionalBranch(method);
         }
 
+        public static ConditionalBranch IfNot(System.Func<bool> method) {
+            return new ConditionalBranch(method, true);
+        }
+
         public static While While(System.Func<bool> method) {
             return new While(method);
         }
@@ -137,6 +141,9 @@ namespace CVXIV {
     #endregion
 
     #region 游戏逻辑框架
+    /// <summary>
+    /// 顺序执行，如果返回失败或者中断则跳出
+    /// </summary>
     public class Sequence : Branch {
         public override AIState Execute() {
             switch (elements[activeIndex].Execute()) {
@@ -208,23 +215,41 @@ namespace CVXIV {
 
         private readonly System.Func<bool> method;
         private bool isPassed = false;
+        private readonly bool isInverse;
 
-        public ConditionalBranch(System.Func<bool> method) {
+        public ConditionalBranch(System.Func<bool> method, bool isInverse = false) {
             this.method = method;
+            this.isInverse = isInverse;
         }
 
         public override AIState Execute() {
+            // isPassed 用来记录它下面的元素是否已经全部运行完成
             if (!isPassed) {
                 isPassed = method();
             }
-            if (isPassed) {
-                AIState result = base.Execute();
-                if (result != AIState.Continue) {
-                    isPassed = false;
+            if (isInverse) {
+                if (!isPassed) {
+                    AIState result = base.Execute();
+                    // 当它下面的元素全部执行完毕，则返回Failure，这样它下面的元素便不再执行
+                    if (result != AIState.Continue) {
+                        isPassed = false;
+                        return AIState.Failure;
+                    }
+                    return result;
                 }
-                return result;
+                isPassed = false;
+                return AIState.Success;
+            } else {
+                if (isPassed) {
+                    AIState result = base.Execute();
+                    if (result != AIState.Continue) {
+                        isPassed = false;
+                    }
+                    return result;
+                }
+                return AIState.Failure;
             }
-            return AIState.Failure;
+            
         }
     }
 

@@ -16,6 +16,7 @@ namespace CVXIV {
             base.OnSLStateNoTransitionUpdate(animator, stateInfo, layerIndex);
             monoBehaviour.CheckIsOnGround();
             monoBehaviour.AddForce(forceValue);
+            monoBehaviour.GroundedHorizontalMovement(false, true);
             if (stateInfo.normalizedTime >= invincibleBeginTime && stateInfo.normalizedTime <= invincibleEndTime) {
                 monoBehaviour.IsInvincible(true);
             }

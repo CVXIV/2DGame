@@ -38,6 +38,7 @@ public class Gunner : MonoBehaviour {
     public Transform lightningEffect;
     public Transform grenadePos;
     public Transform checkPath;
+    public BoxCollider2D obstacle;
 
     private GameObject lightning;
     private Collider2D gunnerColl;
@@ -256,6 +257,7 @@ public class Gunner : MonoBehaviour {
 
     private void AfterExplode() {
         gunnerColl.enabled = false;
+        obstacle.enabled = false;
     }
 
     private void MakeBullet() {

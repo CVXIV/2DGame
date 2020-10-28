@@ -65984,6 +65984,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Chomper
       objectReference: {fileID: 0}
+    - target: {fileID: 1990024085271643095, guid: e7f0bdc262ee2f241aaca66a27a2aa35,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1990024085271643100, guid: e7f0bdc262ee2f241aaca66a27a2aa35,
         type: 3}
       propertyPath: m_LocalPosition.x

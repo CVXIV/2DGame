@@ -11,7 +11,7 @@ namespace CVXIV {
 
         public override void OnSLStateNoTransitionUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
             base.OnSLStateNoTransitionUpdate(animator, stateInfo, layerIndex);
-            if (!hasAttack && stateInfo.normalizedTime >= 0.75f) {
+            if (!hasAttack && stateInfo.normalizedTime >= 0.5f) {
                 monoBehaviour.AttackDamage();
                 hasAttack = true;
             }
@@ -21,6 +21,7 @@ namespace CVXIV {
             base.OnSLStateExit(animator, stateInfo, layerIndex);
             hasAttack = false;
             monoBehaviour.SetKinematic(false);
+            monoBehaviour.SetIsReadyNormalAttack(false);
         }
 
     }

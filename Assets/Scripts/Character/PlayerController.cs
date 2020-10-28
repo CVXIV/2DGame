@@ -177,11 +177,13 @@ namespace CVXIV {
             animator.SetFloat(hashLocomotionSpeed, Mathf.Approximately(currentVelocity.x, 0) ? 1 : currentVelocity.x / 3);
         }
 
-        public void GroundedHorizontalMovement(bool useInput) {
+        public void GroundedHorizontalMovement(bool useInput, bool isForce = false) {
             // 最终速度
-            float desiredSpeed = useInput ? PlayerInput.Instance.Horizontal.Value * maxSpeedX : 0f;
-            float acceleration = useInput && PlayerInput.Instance.Horizontal.ReceivingInput ? groundAcceleration : groundDeceleration;
-            currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, desiredSpeed, acceleration * Time.deltaTime);
+            if (!isForce) {
+                float desiredSpeed = useInput ? PlayerInput.Instance.Horizontal.Value * maxSpeedX : 0f;
+                float acceleration = useInput && PlayerInput.Instance.Horizontal.ReceivingInput ? groundAcceleration : groundDeceleration;
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, desiredSpeed, acceleration * Time.deltaTime);
+            }
             currentVelocity.y = rigid.velocity.y;
         }
 
