@@ -21,8 +21,10 @@ public class Spikes : MonoBehaviour {
     }
 
     private void UpdateObjTime() {
-        foreach (GameObject obj in object_to_damage.Keys.ToArray()) {
-            object_to_damage[obj] += Time.deltaTime;
+        if (object_to_damage.Count > 0) {
+            foreach (GameObject obj in object_to_damage.Keys.ToArray()) {
+                object_to_damage[obj] += Time.deltaTime;
+            }
         }
     }
 

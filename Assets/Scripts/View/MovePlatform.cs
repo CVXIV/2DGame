@@ -26,6 +26,7 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
     private Rigidbody2D rigid;
     private ContactFilter2D contactFilter2D;
     private BoxCollider2D box;
+
     protected virtual void Awake() {
         contactFilter2D.SetLayerMask(LayerMask.GetMask(ConstantVar.EnemyLayer, ConstantVar.PlayLayer));
         rigid = GetComponent<Rigidbody2D>();
@@ -33,14 +34,10 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
         Init();
     }
 
-    private void Start() {
-        StartCoroutine(AfterFixedUpdate());
-    }
-
     private void Init() {
         localNodes[0] = Vector3.zero;
         worldNodes = new Vector3[localNodes.Length];
-        for(int i = 0; i < localNodes.Length; ++i) {
+        for (int i = 0; i < localNodes.Length; ++i) {
             worldNodes[i] = transform.TransformPoint(localNodes[i]);
         }
         currentNode = 0;
@@ -55,16 +52,6 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
         for (int i = 0; i < count; ++i) {
             float velocity_x = rigid.velocity.x;
             hits[i].collider.attachedRigidbody.AddForce(new Vector2(hits[i].collider.attachedRigidbody.mass * velocity_x / Time.fixedDeltaTime, 0));
-        }
-    }
-
-    /// <summary>
-    /// 在FixedUpdate之后执行
-    /// </summary>
-    IEnumerator AfterFixedUpdate() {
-        while (true) {
-            TransportObj();
-            yield return Yields._FixedUpdate;
         }
     }
 
@@ -126,6 +113,7 @@ public class MovePlatform : MonoBehaviour, ISwitchAble {
             }
         }
         rigid.velocity = currentSpeedVector;
+        TransportObj();
     }
 
     public void StopMoving() {
