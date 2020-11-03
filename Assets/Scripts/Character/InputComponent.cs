@@ -119,8 +119,7 @@ namespace CVXIV {
             /// 
             /// </summary>
             /// <param name="fixedUpdateHappened">是否在fixedUpdate期间发生按键</param>
-            /// <param name="inputType">按键的类型</param>
-            public void Get(bool fixedUpdateHappened, InputType inputType) {
+            public void Get(bool fixedUpdateHappened) {
                 if (!enabled) {
                     Down = false;
                     Held = false;
@@ -132,43 +131,24 @@ namespace CVXIV {
                     return;
                 }
 
-                if (inputType == InputType.Controller) {
-                    if (fixedUpdateHappened) {
-                        Down = Input.GetButtonDown(buttonsToName[(int)controllerButton]);
-                        Held = Input.GetButton(buttonsToName[(int)controllerButton]);
-                        Up = Input.GetButtonUp(buttonsToName[(int)controllerButton]);
+                if (fixedUpdateHappened) {
+                    Down = Input.GetButtonDown(buttonsToName[(int)controllerButton]) || Input.GetKeyDown(key);
+                    Held = Input.GetButton(buttonsToName[(int)controllerButton]) || Input.GetKey(key);
+                    Up = Input.GetButtonUp(buttonsToName[(int)controllerButton]) || Input.GetKeyUp(key);
+                    
+                    afterFixedUpdateDown = Down;
+                    afterFixedUpdateHeld = Held;
+                    afterFixedUpdateUp = Up;
+                } else {
+                    Down = Input.GetButtonDown(buttonsToName[(int)controllerButton]) || Input.GetKeyDown(key) || afterFixedUpdateDown;
+                    Held = Input.GetButton(buttonsToName[(int)controllerButton]) || Input.GetKey(key) || afterFixedUpdateHeld;
+                    Up = Input.GetButtonUp(buttonsToName[(int)controllerButton]) || Input.GetKeyUp(key) ||afterFixedUpdateUp;
 
-                        afterFixedUpdateDown = Down;
-                        afterFixedUpdateHeld = Held;
-                        afterFixedUpdateUp = Up;
-                    } else {
-                        Down = Input.GetButtonDown(buttonsToName[(int)controllerButton]) || afterFixedUpdateDown;
-                        Held = Input.GetButton(buttonsToName[(int)controllerButton]) || afterFixedUpdateHeld;
-                        Up = Input.GetButtonUp(buttonsToName[(int)controllerButton]) || afterFixedUpdateUp;
-
-                        afterFixedUpdateDown |= Down;
-                        afterFixedUpdateHeld |= Held;
-                        afterFixedUpdateUp |= Up;
-                    }
-                } else if (inputType == InputType.MouseAndKeyboard) {
-                    if (fixedUpdateHappened) {
-                        Down = Input.GetKeyDown(key);
-                        Held = Input.GetKey(key);
-                        Up = Input.GetKeyUp(key);
-
-                        afterFixedUpdateDown = Down;
-                        afterFixedUpdateHeld = Held;
-                        afterFixedUpdateUp = Up;
-                    } else {
-                        Down = Input.GetKeyDown(key) || afterFixedUpdateDown;
-                        Held = Input.GetKey(key) || afterFixedUpdateHeld;
-                        Up = Input.GetKeyUp(key) || afterFixedUpdateUp;
-
-                        afterFixedUpdateDown |= Down;
-                        afterFixedUpdateHeld |= Held;
-                        afterFixedUpdateUp |= Up;
-                    }
+                    afterFixedUpdateDown |= Down;
+                    afterFixedUpdateHeld |= Held;
+                    afterFixedUpdateUp |= Up;
                 }
+
             }
 
             public void Enable() {
@@ -238,7 +218,7 @@ namespace CVXIV {
                 this.controllerAxis = controllerAxis;
             }
 
-            public void Get(InputType inputType) {
+            public void Get() {
                 if (!enabled) {
                     Value = 0f;
                     return;
@@ -248,26 +228,21 @@ namespace CVXIV {
                     return;
                 }
 
-                bool positiveHeld = false;
-                bool negativeHeld = false;
+                float value = Input.GetAxisRaw(axisToName[(int)controllerAxis]);
+                bool positiveHandleHeld = value > float.Epsilon;
+                bool negativeHandleHeld = value < -float.Epsilon;
+                bool positiveKeyBoardHeld = Input.GetKey(positive);
+                bool negativeKeyBoardHeld = Input.GetKey(negative);
 
-                if (inputType == InputType.Controller) {
-                    float value = Input.GetAxisRaw(axisToName[(int)controllerAxis]);
-                    positiveHeld = value > Single.Epsilon;
-                    negativeHeld = value < -Single.Epsilon;
-                } else if (inputType == InputType.MouseAndKeyboard) {
-                    positiveHeld = Input.GetKey(positive);
-                    negativeHeld = Input.GetKey(negative);
-                }
-                if (positiveHeld == negativeHeld) {
+                if (positiveHandleHeld == negativeHandleHeld && positiveKeyBoardHeld == negativeKeyBoardHeld) {
                     Value = 0f;
-                } else if (positiveHeld) {
+                } else if (positiveHandleHeld || positiveKeyBoardHeld) {
                     Value = 1f;
                 } else {
                     Value = -1f;
                 }
 
-                ReceivingInput = positiveHeld || negativeHeld;
+                ReceivingInput = positiveHandleHeld || negativeHandleHeld || positiveKeyBoardHeld || negativeKeyBoardHeld;
             }
 
             public void Enable() {
@@ -290,8 +265,6 @@ namespace CVXIV {
                 }
             }
         }
-
-        public InputType inputType = InputType.MouseAndKeyboard;
 
         bool fixedUpdateHappened;
 

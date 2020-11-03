@@ -70,3 +70,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 /[Aa]ssets/2DGamekit
 /[Aa]ssets/2DGamekit.meta
+/[Aa]ssets/2Dkit
+/[Aa]ssets/2Dkit.meta

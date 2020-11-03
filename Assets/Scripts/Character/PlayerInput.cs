@@ -23,14 +23,14 @@ namespace CVXIV {
 
 
         protected override void GetInputs(bool fixedUpdateHappened) {
-            Pause.Get(fixedUpdateHappened, inputType);
-            Interact.Get(fixedUpdateHappened, inputType);
-            NormalAttack.Get(fixedUpdateHappened, inputType);
-            SkillAttack.Get(fixedUpdateHappened, inputType);
-            Jump.Get(fixedUpdateHappened, inputType);
-            Tumble.Get(fixedUpdateHappened, inputType);
-            Horizontal.Get(inputType);
-            Vertical.Get(inputType);
+            Pause.Get(fixedUpdateHappened);
+            Interact.Get(fixedUpdateHappened);
+            NormalAttack.Get(fixedUpdateHappened);
+            SkillAttack.Get(fixedUpdateHappened);
+            Jump.Get(fixedUpdateHappened);
+            Tumble.Get(fixedUpdateHappened);
+            Horizontal.Get();
+            Vertical.Get();
         }
 
         public override void GainControl() {

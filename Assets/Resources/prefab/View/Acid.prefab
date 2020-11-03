@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4153070635329214436}
   - component: {fileID: 4153070635329214439}
   - component: {fileID: 4153070635329214434}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Water
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -108,7 +108,7 @@ GameObject:
   - component: {fileID: 4153070635890777229}
   - component: {fileID: 4153070635890777226}
   - component: {fileID: 116987301}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Acid
   m_TagString: Untagged
   m_Icon: {fileID: 0}

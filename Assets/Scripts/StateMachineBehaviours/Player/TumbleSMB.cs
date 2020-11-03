@@ -6,6 +6,7 @@ namespace CVXIV {
         private readonly float forceValue = 180f;
         private readonly float invincibleBeginTime = 0.5f;
         private readonly float invincibleEndTime = 1f;
+        private readonly int hashInvincible = Animator.StringToHash("Invincible");
 
         public override void OnSLStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
             base.OnSLStateEnter(animator, stateInfo, layerIndex);
@@ -24,7 +25,9 @@ namespace CVXIV {
 
         public override void OnSLStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
             base.OnSLStateExit(animator, stateInfo, layerIndex);
-            monoBehaviour.IsInvincible(false);
+            if (!animator.GetBool(hashInvincible)) {
+                monoBehaviour.IsInvincible(false);
+            }
         }
 
     }
